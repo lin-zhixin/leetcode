@@ -1,10 +1,7 @@
 package category;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 // 单链表节点的结构
 class ListNode {
@@ -154,11 +151,105 @@ public class LinkLists {
         }
     }
 
+    //    1. 两数之和
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            if (map.containsKey(target - nums[i])) {
+                return new int[]{map.get(target - nums[i]), i};
+            }
+            map.put(nums[i], i);
+        }
+
+        return new int[]{};
+    }
+
+    //    15. 三数之和
+    public List<List<Integer>> threeSum(int[] nums) {
+
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            map.put(nums[i], i);
+        }
+
+        Arrays.sort(nums);
+        List<List<Integer>> res = new ArrayList<>();
+        Set<List<Integer>> set = new HashSet<>();
+        for (int i = 0; i < nums.length; i++) {
+            int target = 0 - nums[i];
+            int l = i + 1, r = nums.length - 1;
+            while (l < r) {
+                if (nums[l] + nums[r] == target) {
+
+                    List<Integer> tmplist = new ArrayList<>();
+                    tmplist.add(nums[i]);
+                    tmplist.add(nums[l]);
+                    tmplist.add(nums[r]);
+                    set.add(tmplist);
+                    l++;
+                } else if (nums[l] + nums[r] < target) {
+                    l++;
+                } else {
+                    r--;
+                }
+            }
+        }
+        res.addAll(set);
+        return res;
+    }
+
+    //167. 两数之和 II - 输入有序数组
+    public int[] twoSum2(int[] numbers, int target) {
+
+        int l = 0, r = numbers.length - 1;
+        while (l < r) {
+            if (numbers[l] + numbers[r] == target) {
+                return new int[]{l + 1, r + 1};
+            } else if (numbers[l] + numbers[r] < target) {
+                l++;
+            } else {
+                r--;
+            }
+        }
+        return new int[]{};
+    }
+
+    //5. 最长回文子串 动态规划
+//    https://leetcode.cn/problems/longest-palindromic-substring/solution/zhong-xin-kuo-san-fa-he-dong-tai-gui-hua-by-reedfa/
+    public String longestPalindrome(String s) {
+        System.out.println(s);
+        int start = 0, end = 0, maxlen = 1, strlen = s.length();
+        if (s.length() < 2) return s.substring(start, end+1);
+
+        boolean[][] dp = new boolean[strlen][strlen];
+        for (int r = 1; r < s.length(); r++) {
+            for (int l = 0; l < r; l++) {
+                if (s.charAt(l) == s.charAt(r) && (r - l <= 2 || dp[l + 1][r - 1])) {
+                    dp[l][r] = true;
+                    if (r - l + 1 > maxlen) {
+                        maxlen = r - l + 1;
+                        start = l;
+                        end = r;
+                    }
+                }
+            }
+        }
+//        for (int i = 0; i < strlen; i++) {
+////                System.out.println(Arrays.stream(dp[i]));
+//            for (int j = 0; j < strlen; j++) {
+//                System.out.print((dp[i][j] ? 1 : 0) + " ");
+//            }
+//            System.out.println();
+//        }
+        return s.substring(start, end + 1);
+    }
+
     public static void main(String[] args) {
 
         List<Integer> integers = new ArrayList<>();
 
-        int[] ids = new int[]{1, 2, 3, 4, 5};
+        int[] ids = new int[]{2, 7, 11, 15};
         ListNode dummyNode = new ListNode(-1);
         ListNode p = dummyNode;
         for (int e : ids) {
@@ -167,7 +258,8 @@ public class LinkLists {
         }
         LinkLists obj = new LinkLists();
         System.out.println();
-        obj.dis(obj.reverseKGroup(dummyNode.next, 2));
+//        obj.dis(obj.reverseKGroup(dummyNode.next, 2));
+        System.out.println(obj.longestPalindrome("babad"));
     }
 
 
