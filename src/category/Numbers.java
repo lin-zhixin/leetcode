@@ -107,14 +107,37 @@ public class Numbers {
         return allres;
     }
 
-    //31. 下一个排列
+    //31. 下一个排列 根据数字组合的特征解决
+    // 1.如果序列全部降序说明这个序列已经是最大的了
+    // 2.从后往前如果升序到某一个地方突然某一个数k降下去说明这个序列不是最大的还可以提升 并且使用k与后面的序列中的一个大于k的最小值交换然后后面重排为升序就是下一个序列
     public void nextPermutation(int[] nums) {
-        int[] vi = new int[nums.length];
-        List<Integer> res = new ArrayList<>();
-//        allNums(nums, vi, res);
-
+        int n = nums.length, i, j;
+        for (i = n - 2; i >= 0 && nums[i] >= nums[i + 1]; i--) ;
+//        System.out.println(nums[i]);
+        if (i >= 0) {
+            for (j = n - 1; j > i && nums[j] <= nums[i]; j--) ;
+//        System.out.println(nums[j]);
+            j = j < 0 ? n - 1 : j;
+            if (nums[j] != nums[i]) {
+                nums[j] = nums[j] ^ nums[i];
+                nums[i] = nums[j] ^ nums[i];
+                nums[j] = nums[j] ^ nums[i];
+            }
+        }
+        List<Integer> res = Arrays.stream(nums).boxed().collect(Collectors.toList());
+        List<Integer> tmp = res.subList(i + 1, n);
+        Collections.reverse(tmp);
+        System.out.println(tmp);
+        res = res.subList(0, i + 1);
+        res.addAll(tmp);
+//        nums=res.stream().mapToInt(Integer::intValue).toArray();
+        for (int k = 0; k < n; k++) {
+            nums[k] = res.get(k);
+        }
+        System.out.println(res);
     }
 
+    //    全排列
     public void allNums(int[] nums, int[] vi, List<Integer> res, List<List<Integer>> allres) {
         if (res.size() == nums.length) {
             allres.add(new ArrayList<>(res));
@@ -623,11 +646,12 @@ public class Numbers {
     public double findMedianSortedArrays2(int[] nums1, int[] nums2) {
         int totalLen = nums1.length + nums2.length;
         if (totalLen % 2 == 1) {
-            return getKthElement2(nums1, nums2, totalLen / 2+1);//加一是因为k是第几个 没有包括0下标的
+            return getKthElement2(nums1, nums2, totalLen / 2 + 1);//加一是因为k是第几个 没有包括0下标的
         } else {
             return (getKthElement2(nums1, nums2, totalLen / 2) + getKthElement2(nums1, nums2, totalLen / 2 + 1)) / 2.0;
         }
     }
+
 
     public int getKthElement2(int[] nums1, int[] nums2, int k) {
         int ind1 = 0, ind2 = 0;
@@ -656,6 +680,653 @@ public class Numbers {
 
     }
 
+    //448. 找到所有数组中消失的数字 利用下标
+    public List<Integer> findDisappearedNumbers(int[] nums) {
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            nums[(nums[i] - 1) % n] += n;
+        }
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] <= nums.length && res.add(i + 1)) ;
+        }
+        System.out.println(res);
+        return res;
+
+    }
+
+    //461. 汉明距离
+    public int hammingDistance(int x, int y) {
+        Integer n = x ^ y;
+        System.out.println(n);
+        String bit = Integer.toBinaryString(n);
+        int res = 0;
+        for (int i = 0; i < bit.length(); i++) {
+            if (Objects.equals(bit.charAt(i), '1')) res++;
+        }
+        System.out.println();
+        return res;
+    }
+
+    //48. 旋转图像  https://labuladong.github.io/algo/di-yi-zhan-da78c/shou-ba-sh-48c1d/er-wei-shu-150fb/
+    public void rotate(int[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j <= i; j++) {
+                if (matrix[i][j] != matrix[j][i]) {
+                    matrix[i][j] = matrix[i][j] ^ matrix[j][i];
+                    matrix[j][i] = matrix[i][j] ^ matrix[j][i];
+                    matrix[i][j] = matrix[i][j] ^ matrix[j][i];
+                }
+            }
+        }
+        int l = 0, r = matrix.length - 1;
+        while (l < r) {
+            for (int i = 0; i < matrix.length; i++) {
+                if (matrix[i][l] != matrix[i][r]) {
+                    matrix[i][l] = matrix[i][l] ^ matrix[i][r];
+                    matrix[i][r] = matrix[i][l] ^ matrix[i][r];
+                    matrix[i][l] = matrix[i][l] ^ matrix[i][r];
+                }
+            }
+            l++;
+            r--;
+        }
+//        MyUtile.disMap(matrix);
+    }
+
+
+    //54. 螺旋矩阵  https://labuladong.github.io/algo/di-yi-zhan-da78c/shou-ba-sh-48c1d/er-wei-shu-150fb/
+    List<Integer> spiralOrder(int[][] matrix) {
+        int m = matrix.length, n = matrix[0].length;
+        int upper_bound = m - 1, lower_bound = 0;
+        int left_bound = 0, right_bound = n - 1;
+        List<Integer> res = new LinkedList<>();
+
+        while (res.size() < m * n) {
+            if (lower_bound <= upper_bound) {
+                for (int i = left_bound; i <= right_bound; i++) {
+                    res.add(matrix[lower_bound][i]);
+                }
+                lower_bound++;
+            }
+            if (left_bound <= right_bound) {
+                for (int i = lower_bound; i <= upper_bound; i++) {
+                    res.add(matrix[i][right_bound]);
+                }
+                right_bound--;
+            }
+            if (lower_bound <= upper_bound) {
+                for (int i = right_bound; i >= left_bound; i--) {
+                    res.add(matrix[upper_bound][i]);
+                }
+                upper_bound--;
+            }
+            if (left_bound <= right_bound) {
+                for (int i = upper_bound; i >= lower_bound; i--) {
+                    res.add(matrix[i][left_bound]);
+                }
+                left_bound++;
+            }
+        }
+        System.out.println(res);
+        return res;
+    }
+
+    //59. 螺旋矩阵 II
+    public int[][] generateMatrix(int n) {
+        int t = 1;
+        int[][] res = new int[n][n];
+        int lower_bound = 0, upper_bound = n - 1;
+        int left_bound = 0, right_bound = n - 1;
+        while (t <= n * n) {
+            if (lower_bound <= upper_bound) {
+                for (int i = left_bound; i <= right_bound; i++) {
+                    res[lower_bound][i] = t++;
+                }
+                lower_bound++;
+            }
+            if (left_bound <= right_bound) {
+                for (int i = lower_bound; i <= upper_bound; i++) {
+                    res[i][right_bound] = t++;
+                }
+                right_bound--;
+            }
+            if (lower_bound <= upper_bound) {
+                for (int i = right_bound; i >= left_bound; i--) {
+                    res[upper_bound][i] = t++;
+                }
+                upper_bound--;
+            }
+            if (left_bound <= right_bound) {
+                for (int i = upper_bound; i >= lower_bound; i--) {
+                    res[i][left_bound] = t++;
+                }
+                left_bound++;
+            }
+        }
+        return res;
+
+    }
+
+    //73. 矩阵置零
+    public void setZeroes(int[][] matrix) {
+        boolean col0 = false, row0 = false;
+        int m = matrix.length, n = matrix[0].length, i, j;
+        for (i = 0; i < m && matrix[i][0] != 0; i++) ;
+        col0 = i != m;
+        for (i = 0; i < n && matrix[0][i] != 0; i++) ;
+        row0 = i != n;
+
+        for (i = 1; i < m; i++) {
+            for (j = 1; j < n; j++) {
+                if (matrix[i][j] == 0) {
+                    matrix[0][j] = matrix[i][0] = 0;
+                }
+
+            }
+
+        }
+        for (i = 1; i < m; i++) {
+            for (j = 1; j < n; j++) {
+                if (matrix[0][j] == 0 || matrix[i][0] == 0) {
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+
+        if (col0) {
+            for (i = 0; i < m; i++) {
+                matrix[i][0] = 0;
+            }
+
+        }
+        if (row0) {
+            for (i = 0; i < n; i++) {
+                matrix[0][i] = 0;
+            }
+
+        }
+
+
+    }
+
+
+    //    128. 最长连续序列
+    public int longestConsecutive(int[] nums) {
+        Set<Integer> set = Arrays.stream(nums).boxed().collect(Collectors.toSet());
+
+        int tmplen = 0, num, max = 0;
+        for (int i = 0; i < nums.length; i++) {
+            num = nums[i];
+            if (!set.contains(num - 1)) {
+                set.add(num);
+                tmplen = 1;
+
+                while (set.contains(num + 1)) {
+                    num++;
+                    tmplen++;
+                }
+                max = Math.max(max, tmplen);
+            }
+        }
+        System.out.println(max);
+        return max;
+
+    }
+
+    //172. 阶乘后的零 https://labuladong.github.io/algo/di-san-zha-24031/shu-xue-yu-659f1/jiang-lian-ae367/
+    public int trailingZeroes(int n) {
+        int res = 0, dev = 5, t = n;
+        while (t > 0) {
+            res += t / 5;
+            t /= 5;
+        }
+
+        System.out.println(res);
+        return res;
+
+    }
+
+    //179. 最大数
+    public String largestNumber(int[] nums) {
+
+        List<Integer> list = Arrays.stream(nums).boxed().collect(Collectors.toList());
+        list.sort((x, y) -> {
+            int sx = 10, sy = 10;
+            while (sx <= x) {
+                sx *= 10;
+            }
+            while (sy <= y) {
+                sy *= 10;
+            }
+            return sx * y + x - sy * x - y;
+        });
+        StringBuilder res = new StringBuilder();
+        for (Integer o : list) {
+            res.append(o.toString());
+        }
+
+        System.out.println(res);
+        return Objects.equals(res.charAt(0), '0') ? "0" : res.toString();
+
+    }
+
+    //189. 轮转数组
+    public void rotate(int[] nums, int k) {
+        k %= nums.length;
+        reverse(nums, 0, nums.length - 1);
+        reverse(nums, 0, k - 1);
+        reverse(nums, k, nums.length - 1);
+        MyUtile.dis(nums);
+    }
+
+    public void reverse(int[] nums, int l, int r) {
+        while (l < r) {
+            if (nums[l] != nums[r]) {
+                nums[l] = nums[l] ^ nums[r];
+                nums[r] = nums[l] ^ nums[r];
+                nums[l] = nums[l] ^ nums[r];
+            }
+            l++;
+            r--;
+        }
+    }
+
+    //204. 计数质数 高效排除法
+    public int countPrimes(int n) {
+        boolean[] res = new boolean[n + 1];
+        Arrays.fill(res, true);
+        for (int i = 2; i * i < n; i++) {
+            if (res[i]) {
+                for (int j = i * i; j < n; j += i) {
+                    res[j] = false;
+                }
+            }
+        }
+        int c = 0;
+        for (int i = 2; i < res.length - 1; i++) {
+            if (res[i]) {
+                System.out.println(i);
+                c++;
+            }
+        }
+        System.out.println(c);
+        return c;
+
+    }
+
+    //238. 除自身以外数组的乘积
+    public int[] productExceptSelf(int[] nums) {
+        int n = nums.length;
+        int[] res = new int[n];
+        res[0] = 1;
+        for (int i = 1; i < n; i++) {
+            res[i] = nums[i - 1] * res[i - 1];
+        }
+
+        int r = 1;
+        for (int i = n - 1; i > 0; i--) {
+            res[i] *= r;
+            r *= nums[i];
+        }
+        res[0] = r;
+//        MyUtile.dis(res);
+        return res;
+    }
+
+    //240. 搜索二维矩阵 II
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int i = 0, j = matrix[0].length - 1;
+        while (i >= 0 && i < matrix.length && j >= 0 && j < matrix[i].length) {
+            if (matrix[i][j] == target) {
+                return true;
+            } else if (matrix[i][j] < target) {
+                i++;
+            } else if (matrix[i][j] > target) {
+                j--;
+            }
+        }
+        return false;
+
+    }
+
+    //378. 有序矩阵中第 K 小的元素
+    public int kthSmallest(int[][] matrix, int k) {
+        PriorityQueue<Pair<Integer, Pair<Integer, Integer>>> heap = new PriorityQueue<>(Comparator.comparingInt(Pair::getKey));
+        int n = matrix.length;
+        for (int i = 0; i < n; i++) {
+            heap.add(new Pair<>(matrix[i][0], new Pair<>(i, 0)));
+        }
+        k--;
+        while (k > 0) {
+            Pair<Integer, Pair<Integer, Integer>> top = heap.poll();
+            if (top.getValue().getValue() + 1 < n) {
+                heap.add(new Pair<>(matrix[top.getValue().getKey()][top.getValue().getValue() + 1], new Pair<>(top.getValue().getKey(), top.getValue().getValue() + 1)));
+            }
+            k--;
+        }
+        System.out.println(heap.peek());
+        return heap.peek().getKey();
+    }
+
+    //454. 四数相加 II
+    public int fourSumCount(int[] nums1, int[] nums2, int[] nums3, int[] nums4) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int u : nums1) {
+            for (int v : nums2) {
+                map.put(u + v, map.getOrDefault(u + v, 0) + 1);
+            }
+        }
+        int res = 0;
+        for (int u : nums3) {
+            for (int v : nums4) {
+                if (map.containsKey(-u - v)) {
+                    res += map.get(-u - v);
+                }
+            }
+        }
+        return res;
+
+
+    }
+
+
+    //26. 删除有序数组中的重复项
+    public int removeDuplicates(int[] nums) {
+        int slow = 0, fast = 0;
+        while (fast < nums.length) {
+            if (nums[slow] != nums[fast]) {
+                nums[++slow] = nums[fast];
+            }
+            fast++;
+        }
+        MyUtile.dis(nums);
+        return slow + 1;
+    }
+
+    //66. 加一
+    public int[] plusOne(int[] digits) {
+        int n = digits.length;
+        int carry = 0;
+
+        if (digits[n - 1] + 1 == 10) carry = 1;
+        digits[n - 1] = (digits[n - 1] + 1) % 10;
+        for (int i = n - 2; i >= 0; i--) {
+            if (digits[i] + carry >= 10) {
+                digits[i] = (digits[i] + carry) % 10;
+                carry = 1;
+            } else {
+                digits[i] += carry;
+                carry = 0;
+            }
+        }
+        if (carry == 1) {
+            int[] res = new int[n + 1];
+            res[0] = 1;
+            for (int i = 1; i < res.length; i++) {
+                res[i] = digits[i - 1];
+            }
+            return res;
+        }
+        return digits;
+
+    }
+
+    //    88. 合并两个有序数组 逆向指针
+    public void merge(int[] nums1, int m, int[] nums2, int n) {
+        int p1 = m - 1, p2 = n - 1, ind = m + n - 1;
+        while (p1 != -1 || p2 != -1) {
+            int cur;
+            if (p1 == -1) {
+                cur = nums2[p2--];
+            } else if (p2 == -1) {
+                cur = nums1[p1--];
+            } else if (nums1[p1] > nums2[p2]) {
+                cur = nums1[p1--];
+            } else {
+                cur = nums2[p2--];
+            }
+            nums1[ind--] = cur;
+        }
+        MyUtile.dis(nums1);
+
+    }
+
+    //118. 杨辉三角
+    public List<List<Integer>> generate(int numRows) {
+        List<List<Integer>> res = new ArrayList<>(numRows);
+        int[][] tmpres = new int[numRows][numRows];
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j <= i; j++) {
+                tmpres[i][j] = j == 0 || i == j ? 1 : tmpres[i - 1][j] + tmpres[i - 1][j - 1];
+            }
+            res.add(Arrays.stream(tmpres[i]).boxed().collect(Collectors.toList()).subList(0, i + 1));
+        }
+        System.out.println(res);
+        return res;
+
+
+    }
+
+    //190. 颠倒二进制位
+    public int reverseBits(int n) {
+
+        int res = 0;
+        for (int i = 0; i < 32; i++) {
+            res <<= 1;
+            res |= (n & 1);
+            n >>= 1;
+        }
+
+        System.out.println(res);
+
+        return res;
+    }
+
+    //191. 位1的个数
+    public int hammingWeight(int n) {
+        int res = 0;
+        while (n > 0) {
+            n &= (n - 1);
+            res++;
+        }
+        System.out.println(res);
+        return res;
+
+    }
+
+
+    //202. 快乐数
+    public boolean isHappy(int n) {
+        int slow = n, fast = getNext(n);
+        while (fast != 1 && slow != fast) {
+            slow = getNext(slow);
+            fast = getNext(getNext(fast));
+        }
+        return fast == 1;
+    }
+
+    public int getNext(int n) {
+        int p = 0;
+        while (n > 0) {
+            p += (n % 10) * (n % 10);
+            n /= 10;
+        }
+        return p;
+    }
+//    217. 存在重复元素
+
+    public boolean containsDuplicate(int[] nums) {
+        Set<Integer> set = new HashSet<Integer>();
+        for (int i = 0; i < nums.length; i++) {
+            if (!set.add(nums[i])) {
+                return true;
+            }
+
+        }
+        return false;
+
+    }
+
+
+    //268. 丢失的数字 异或运算
+    public int missingNumber(int[] nums) {
+        List<Integer> list = Arrays.stream(nums).boxed().collect(Collectors.toList());
+        for (int i = 0; i <= nums.length; i++) {
+            list.add(i);
+        }
+        int res = 0;
+        for (Integer num : list) {
+            res ^= num;
+        }
+        return res;
+    }
+
+    //350. 两个数组的交集 II
+    public int[] intersect(int[] nums1, int[] nums2) {
+        int p1 = 0, p2 = 0;
+        Arrays.sort(nums1);
+        Arrays.sort(nums2);
+        List<Integer> list = new ArrayList<Integer>();
+        while (p1 < nums1.length && p2 < nums2.length) {
+            if (nums1[p1] == nums2[p2]) {
+                list.add(nums1[p1++]);
+                p2++;
+            } else if (nums1[p1] < nums2[p2]) {
+                p1++;
+            } else if (nums1[p1] > nums2[p2]) {
+                p2++;
+            }
+        }
+        return list.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    //    350. 两个数组的交集 II 第二种
+    public int[] intersect2(int[] nums1, int[] nums2) {
+        Map<Integer, Integer> map = new HashMap<>();
+        List<Integer> list = new ArrayList<Integer>();
+        for (int i = 0; i < nums1.length; i++) {
+            map.put(nums1[i], map.getOrDefault(nums1[i], 0) + 1);
+        }
+        for (int i = 0; i < nums2.length; i++) {
+            if (map.containsKey(nums2[i]) && map.get(nums2[i]) > 0) {
+                list.add(nums2[i]);
+                map.compute(nums2[i], (k, v) -> v - 1);
+            }
+        }
+        return list.stream().mapToInt(Integer::intValue).toArray();
+
+    }
+
+    //326. 3 的幂
+    public boolean isPowerOfThree(int n) {
+        while (n > 0 && n % 3 == 0) {
+            n /= 3;
+        }
+        return n == 1;
+
+    }
+
+
+    //42. 接雨水
+    public int trap(int[] height) {
+        int n = height.length;
+        int l = 0, r = n - 1, lmax = Integer.MIN_VALUE, rmax = Integer.MIN_VALUE, res = 0;
+        while (l < r) {
+            lmax = Math.max(lmax, height[l]);
+            rmax = Math.max(rmax, height[r]);
+            if (lmax < rmax) {
+                res += lmax - height[l++];
+            } else {
+                res += rmax - height[r--];
+            }
+        }
+        return res;
+
+    }
+
+    //    11. 盛最多水的容器
+    public int maxArea(int[] height) {
+        int n = height.length;
+        int l = 0, r = n - 1, lmax = Integer.MIN_VALUE, rmax = Integer.MIN_VALUE, res = 0;
+        while (l < r) {
+            lmax = Math.max(lmax, height[l]);
+            rmax = Math.max(rmax, height[r]);
+            if (lmax < rmax) {
+                res = Math.max(res, (r - l) * lmax);
+                l++;
+            } else {
+                res = Math.max(res, (r - l) * rmax);
+                r--;
+            }
+            System.out.println(res);
+
+        }
+        return res;
+
+    }
+
+    //41. 缺失的第一个正数
+    public int firstMissingPositive(int[] nums) {
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            nums[i] = nums[i] <= 0 ? n + 1 : nums[i];
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (Math.abs(nums[i]) <= n) {
+                int ind = Math.abs(nums[i]);
+                if (nums[ind - 1] > 0) {
+                    nums[ind - 1] *= -1;
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (nums[i] > 0) {
+                return i + 1;
+            }
+        }
+        return n + 1;
+
+    }
+
+//239. 滑动窗口最大值 单调队列
+
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        List<Integer> res = new ArrayList<>();
+        Deque<Integer> q = new LinkedList<>();
+        int l = 0, r = k - 1, n = nums.length;
+        for (int i = 0; i < n; i++) {
+            while (!q.isEmpty() && q.peekLast() < nums[i]) {
+                q.pollLast();
+            }
+            q.addLast(nums[i]);
+
+            if (i >= k - 1) {
+                res.add(q.peekFirst());
+                if (q.peekFirst() == nums[l++]) {
+                    q.pollFirst();
+                }
+            }
+        }
+        return res.stream().mapToInt(Integer::intValue).toArray();
+
+    }
+
+    //134. 加油站
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        int sum = 0, minsum = 0, start = 0;
+        for (int i = 0; i < gas.length; i++) {
+            sum += (gas[i] - cost[i]);
+            if (sum < minsum) {
+                minsum = sum;
+                start = i + 1;
+            }
+        }
+        if (sum < 0) return -1;
+        return start == gas.length ? 0 : start;
+    }
+
 
     public static void main(String[] args) {
         Numbers numbers = new Numbers();
@@ -673,11 +1344,54 @@ public class Numbers {
 //        numbers.topKFrequent(new int[]{1, 1, 1, 2, 2, 3}, 2);
 //        numbers.sortColors(new int[]{2, 0, 1});
 //        numbers.findMid(new int[]{1, 3}, new int[]{2, 4});
-        int[] nums1 = new int[]{1, 3};
-        int[] nums2 = new int[]{2};
-        System.out.println(numbers.findMedianSortedArrays2(nums1, nums2));
+        int[] nums1 = new int[]{1, 2, 3, 0, 0, 0};
+        int[] nums2 = new int[]{2, 5, 6};
+//        System.out.println(numbers.findMedianSortedArrays2(nums1, nums2));
+//        numbers.merge(nums1, 3, nums2, 3);
+//        numbers.generate(5);
+//        numbers.hammingWeight(4294967293L);
+//        MyUtile.dis();
     }
 
 }
+
+
+//295. 数据流的中位数 两个优先队列
+class MedianFinder {
+    PriorityQueue<Integer> small;
+    PriorityQueue<Integer> large;
+
+    public MedianFinder() {
+        small = new PriorityQueue<>((a, b) -> b - a);//大根
+        large = new PriorityQueue<>();//小根
+    }
+
+    public void addNum(int num) {
+        if (small.size() <= large.size()) {
+            large.offer(num);
+            small.offer(large.poll());
+        } else {
+            small.offer(num);
+            large.offer(small.poll());
+        }
+    }
+
+    public double findMedian() {
+        if (small.size() < large.size()) {
+            return large.peek();
+        } else if (small.size() > large.size()) {
+            return small.peek();
+        } else {
+            return (large.peek() + small.peek()) / 2.0;
+        }
+    }
+}
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder obj = new MedianFinder();
+ * obj.addNum(num);
+ * double param_2 = obj.findMedian();
+ */
 
 

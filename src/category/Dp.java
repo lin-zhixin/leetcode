@@ -481,7 +481,44 @@ public class Dp {
             }
         }
         System.out.println(max);
-        return max+1;
+        return max + 1;
+    }
+
+    //10. 正则表达式匹配
+    public boolean isMatch(String s, String p) {
+        return dp(s, p, 0, 0);
+    }
+
+    public boolean dp(String s, String p, int i, int j) {
+        int m = s.length(), n = p.length();
+        if (j == n) {
+            return i == m;
+        }
+        if (i == m) {
+            if ((n - j) % 2 == 1) {
+                return false;
+            }
+            for (int k = j; k < n; k += 2) {
+                if (p.charAt(k + 1) != '*') {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (Objects.equals(s.charAt(i), p.charAt(j)) || Objects.equals(p.charAt(j), '.')) {
+            if (j + 1 < n && Objects.equals(p.charAt(j + 1), '*')) {
+                return dp(s, p, i, j + 2) || dp(s, p, i + 1, j);
+            } else {
+                return dp(s, p, i + 1, j + 1);
+            }
+        } else {
+            if (j + 1 < n && Objects.equals(p.charAt(j + 1), '*')) {
+                return dp(s, p, i, j + 2);
+            } else {
+                return false;
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -502,6 +539,6 @@ public class Dp {
 //        });
 //        dp.partition("aab");
 //        dp.numSquares(12);
-        dp.longest("cbbd");
+        dp.isMatch("aa","a*");
     }
 }

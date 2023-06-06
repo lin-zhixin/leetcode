@@ -445,7 +445,7 @@ public class Tree {
 
     public int diameterOfBinaryTree(TreeNode root) {
         preOrder(root);
-        return max-1;
+        return max - 1;
     }
 
     public int preOrder(TreeNode root) {
@@ -459,10 +459,39 @@ public class Tree {
         return Math.max(l, r) + 1;
     }
 
+    //617. 合并二叉树
+    public TreeNode mergeTrees(TreeNode root1, TreeNode root2) {
+        TreeNode root3 = mergeTrees(root1, root2, null, 0);
+//        System.out.println(inorderTraversal(mergeTrees(root1, root2, null,0)));
+        return root3;
+    }
+
+    public TreeNode mergeTrees(TreeNode root1, TreeNode root2, TreeNode root3, int n) {
+        if (Objects.nonNull(root1) || Objects.nonNull(root2)) {
+//            if (Objects.nonNull(root1))
+            Integer val = 0;
+            if (Objects.nonNull(root2)) {
+                val += root2.val;
+            }
+            if (Objects.nonNull(root1)) {
+                val += root1.val;
+            }
+//            MyUtile.printBlank(n++,val.toString());
+
+            root3 = new TreeNode(val);
+            root3.left = mergeTrees(Optional.ofNullable(root1).map(r -> r.left).orElse(null), Optional.ofNullable(root2).map(r -> r.left).orElse(null), null, n);
+            root3.right = mergeTrees(Optional.ofNullable(root1).map(r -> r.right).orElse(null), Optional.ofNullable(root2).map(r -> r.right).orElse(null), null, n);
+//            MyUtile.printBlank(--n,val.toString());
+            return root3;
+        } else {
+            return null;
+        }
+    }
 
     public static void main(String[] args) {
         Tree o = new Tree();
-        TreeNode root = o.buildBylevel(new TreeNode(), new int[]{1, 2, 3, 4, 5});
+        TreeNode root1 = o.buildBylevel(new TreeNode(), new int[]{1, 3, 2, 5});
+        TreeNode root2 = o.buildBylevel(new TreeNode(), new int[]{2, 1, 3, -1, 4, -1, 7});
 
 //        System.out.println(o.inorderTraversal(root));
 //        System.out.println(o.maxDepth(root));
@@ -470,7 +499,8 @@ public class Tree {
 //        System.out.println(o.levelOrder(root));
 //        System.out.println(o.lowestCommonAncestor(root, new TreeNode(5), new TreeNode(1)).val);
 //        System.out.println(o.postOrder(root));
-        System.out.println(o.diameterOfBinaryTree(root));
+//        System.out.println(o.diameterOfBinaryTree(root));
+        o.mergeTrees(root1, root2);
     }
 
 }
