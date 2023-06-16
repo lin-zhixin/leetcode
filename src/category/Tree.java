@@ -488,6 +488,94 @@ public class Tree {
         }
     }
 
+    //    111. 二叉树的最小深度 bfs
+    public int minDepth(TreeNode root) {
+        if (Objects.isNull(root)) return 0;
+//        Set<TreeNode> set=new HashSet<>();
+        Deque<TreeNode> q = new LinkedList<>();
+
+        q.offer(root);
+//        set
+        int res = 0;
+        while (!q.isEmpty()) {
+            int sz = q.size();
+            res++;
+            for (int i = 0; i < sz; i++) {
+                TreeNode cur = q.pop();
+                if (Objects.isNull(cur.left) && Objects.isNull(cur.right)) {
+                    return res;
+                }
+                if (Objects.nonNull(cur.left) && q.offer(cur.left)) ;
+                if (Objects.nonNull(cur.right) && q.offer(cur.right)) ;
+            }
+        }
+        return res;
+
+    }
+
+    //    752. 打开转盘锁 bfs
+    public int openLock(String[] deadends, String target) {
+        List<String> dead = Arrays.stream(deadends).collect(Collectors.toList());
+        Set<String> vi = new HashSet<>();
+        Deque<String> q = new LinkedList<>();
+        q.offer("0000");
+        vi.add("0000");
+
+        int res = 0;
+        while (!q.isEmpty()) {
+            int sz = q.size();
+
+//            res++;
+            for (int i = 0; i < sz; i++) {
+                String cur = q.poll();
+
+                if (dead.contains(cur)) {
+                    continue;
+                }
+                if (cur.equals(target)) {
+                    System.out.println(target + " ? " + cur);
+                    System.out.println(res);
+                    return res;
+                }
+                for (int j = 0; j < 4; j++) {
+                    String t = add1(cur, j);
+                    if (!vi.contains(t)) {
+                        q.offer(t);
+                        vi.add(t);
+                    }
+                    t = less1(cur, j);
+                    if (!vi.contains(t)) {
+                        q.offer(t);
+                        vi.add(t);
+                    }
+                }
+            }
+            res++;
+        }
+        return -1;
+
+    }
+
+    public String add1(String s, int i) {
+        StringBuilder ss = new StringBuilder(s);
+        if (ss.charAt(i) == '9') {
+            ss.setCharAt(i, '0');
+        } else {
+            ss.setCharAt(i, (char) (ss.charAt(i) + 1));
+        }
+        return ss.toString();
+    }
+
+    public String less1(String s, int i) {
+        StringBuilder ss = new StringBuilder(s);
+        if (ss.charAt(i) == '0') {
+            ss.setCharAt(i, '9');
+        } else {
+            ss.setCharAt(i, (char) (ss.charAt(i) - 1));
+        }
+        return ss.toString();
+    }
+
     public static void main(String[] args) {
         Tree o = new Tree();
         TreeNode root1 = o.buildBylevel(new TreeNode(), new int[]{1, 3, 2, 5});
@@ -500,7 +588,9 @@ public class Tree {
 //        System.out.println(o.lowestCommonAncestor(root, new TreeNode(5), new TreeNode(1)).val);
 //        System.out.println(o.postOrder(root));
 //        System.out.println(o.diameterOfBinaryTree(root));
-        o.mergeTrees(root1, root2);
+//        o.mergeTrees(root1, root2);
+        System.out.println(o.openLock(new String[]{"8888"}, "0009"));
+//        System.out.println(o.openLock(new String[]{"8887","8889","8878","8898","8788","8988","7888","9888"}, "8888"));
     }
 
 }

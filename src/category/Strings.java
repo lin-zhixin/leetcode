@@ -328,8 +328,31 @@ public class Strings {
 
     }
 
+    //316. 去除重复字母 单调栈
+    public String removeDuplicateLetters(String s) {
+//        ReentrantLock
+        Stack<Character> stack = new Stack<>();
+        boolean[] instack = new boolean[256];
+        int[] count = new int[256];
+        for (int i = 0; i < s.length(); i++) {
+            count[s.charAt(i)]++;
+        }
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            count[c]--;
+            if (!instack[c]) {
+                instack[c] = true;
+                while (!stack.isEmpty() && stack.peek() > c && count[stack.peek()] > 0) {
+                    instack[stack.pop()] = false;
+                }
+                stack.push(c);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        stack.forEach(sb::append);
+        return sb.toString();
 
-
+    }
 
 
     public static void main(String[] args) {
@@ -338,7 +361,7 @@ public class Strings {
 //        System.out.println(obj.reverseWords("the    sky   is   blue"));
 //        System.out.println(obj.longestCommonPrefix(new String[]{"flower", "low", "flight"}));
 //        System.out.println(obj.isPalindrome("ab_a"));
-//        obj.reverseBits(4294967293);
+        System.out.println(obj.removeDuplicateLetters("bcabc"));
 
     }
 }

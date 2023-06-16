@@ -1327,6 +1327,59 @@ public class Numbers {
         return start == gas.length ? 0 : start;
     }
 
+    //496. 下一个更大元素 I 单调栈
+    public int[] nextGreaterElement(int[] nums1, int[] nums2) {
+        Map<Integer, Integer> map = new HashMap<>();
+        Stack<Integer> stack = new Stack<>();
+        int[] res = new int[nums2.length];
+        for (int i = nums2.length - 1; i >= 0; i--) {
+            map.put(nums2[i], i);
+            while (!stack.empty() && stack.peek() <= nums2[i] && stack.pop() != null) ;
+
+            res[i] = stack.isEmpty() ? -1 : stack.peek();
+            stack.push(nums2[i]);
+        }
+        System.out.println(Arrays.stream(res).boxed().collect(Collectors.toList()));
+        for (int i = 0; i < nums1.length; i++) {
+            nums1[i] = res[map.get(nums1[i])];
+        }
+        return nums1;
+
+    }
+
+    //503. 下一个更大元素 II
+    public int[] nextGreaterElements(int[] nums) {
+//        int[] t=new int[nums.length*2];
+        List<Integer> list = Arrays.stream(nums).boxed().collect(Collectors.toList());
+        list.addAll(Arrays.stream(nums).boxed().collect(Collectors.toList()));
+//        int[] nums2 = list.stream().mapToInt(Integer::intValue).toArray();
+        Stack<Integer> stack = new Stack<>();
+        int[] res = new int[list.size()];
+        for (int i = list.size() - 1; i >= 0; i--) {
+//            map.put(nums2[i], i);
+            while (!stack.empty() && stack.peek() <= list.get(i) && stack.pop() != null) ;
+            res[i] = stack.isEmpty() ? -1 : stack.peek();
+            stack.push(list.get(i));
+        }
+        MyUtile.dis(res);
+//        System.out.println(res);
+        return Arrays.stream(res).boxed().collect(Collectors.toList()).subList(0, nums.length).stream().mapToInt(Integer::intValue).toArray();
+
+    }
+
+    //739. 每日温度
+    public int[] dailyTemperatures(int[] temperatures) {
+        Stack<Pair<Integer, Integer>> stack = new Stack<>();
+        int[] res = new int[temperatures.length];
+        for (int i = temperatures.length - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && stack.peek().getKey() <= temperatures[i] && stack.pop() != null) ;
+            res[i] = stack.isEmpty() ? 0 : stack.peek().getValue()-i;
+            stack.push(new Pair<>(temperatures[i], i));
+        }
+        return res;
+
+    }
+
 
     public static void main(String[] args) {
         Numbers numbers = new Numbers();
@@ -1344,8 +1397,9 @@ public class Numbers {
 //        numbers.topKFrequent(new int[]{1, 1, 1, 2, 2, 3}, 2);
 //        numbers.sortColors(new int[]{2, 0, 1});
 //        numbers.findMid(new int[]{1, 3}, new int[]{2, 4});
-        int[] nums1 = new int[]{1, 2, 3, 0, 0, 0};
-        int[] nums2 = new int[]{2, 5, 6};
+        int[] nums1 = new int[]{4, 1, 2};
+        int[] nums2 = new int[]{1, 2, 3, 4, 3, 1, 2, 3, 4, 3};
+        System.out.println(numbers.nextGreaterElements(nums2));
 //        System.out.println(numbers.findMedianSortedArrays2(nums1, nums2));
 //        numbers.merge(nums1, 3, nums2, 3);
 //        numbers.generate(5);
