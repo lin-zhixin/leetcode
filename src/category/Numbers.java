@@ -11,12 +11,409 @@ import java.util.stream.Stream;
 //import org.apache.commons.collections.CollectionUtils;
 
 public class Numbers {
+    //    合并区间
+    public int[][] merge(int[][] intervals) {
+        Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
+        int l = intervals[0][0], r = intervals[0][1];
+        List<int[]> res = new ArrayList<>();
+        for (int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] <= r && intervals[i][1] > r) {
+                r = intervals[i][1];
+                continue;
+            }
+            if (intervals[i][0] > r) {
+                res.add(new int[]{l, r});
+                l = intervals[i][0];
+                r = intervals[i][1];
+            }
+        }
+        res.add(new int[]{l, r});
+        System.out.println(res);
+        return res.toArray(new int[res.size()][]);
+    }
+
+    //1288. 删除被覆盖区间
+    public int removeCoveredIntervals(int[][] intervals) {
+        Arrays.sort(intervals, (a, b) -> a[0] == b[0] ? b[1] - a[1] : a[0] - b[0]);
+        int l = intervals[0][0], r = intervals[0][1];
+        int cnt = 0;
+        for (int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] >= l && intervals[i][1] <= r) {
+                cnt++;
+            }
+            if (intervals[i][1] > r) {
+                l = intervals[i][0];
+                r = intervals[i][1];
+            }
+        }
+        System.out.println(cnt);
+        return intervals.length - cnt;
+    }
+
+    //    986. 区间列表的交集
+    public int[][] intervalIntersection(int[][] firstList, int[][] secondList) {
+        int al, ar, bl, br, i = 0, j = 0;
+        List<int[]> res = new ArrayList<>();
+        while (i < firstList.length && j < secondList.length) {
+            al = firstList[i][0];
+            ar = firstList[i][1];
+            bl = secondList[j][0];
+            br = secondList[j][1];
+            if (bl <= ar && br >= al) {
+                res.add(new int[]{Math.max(al, bl), Math.min(ar, br)});
+            }
+            if (ar > br) {
+                j++;
+            } else {
+                i++;
+            }
+        }
+        return res.toArray(new int[res.size()][]);
+    }
+
+    //    面試題：topk问题 215. 数组中的第K个最大元素
+    public int findKthLargest3(int[] nums, int k) {
+        return qsortSelect(nums, 0, nums.length - 1, nums.length - k);
+    }
+
+    public int qsortSelect(int[] nums, int l, int r, int k) {
+        if (l < r) {
+            int p = topKPart(nums, l, r, k);
+            if (p == k) {
+                return nums[p];
+            } else if (p < k) {
+                return qsortSelect(nums, p + 1, r, k);
+            } else if (p > k) {
+                return qsortSelect(nums, l, p - 1, k);
+            }
+        }
+        return nums[l];
+    }
+
+    public int topKPart(int[] nums, int l, int r, int k) {
+        int p = nums[l];
+        while (l < r) {
+            while (l < r && nums[r] >= p) r--;
+            nums[l] = nums[r];
+            while (l < r && nums[l] <= p) l++;
+            nums[r] = nums[l];
+        }
+        nums[l] = p;
+        return l;
+    }
+
+    //33. 搜索旋转排序数组 二分
+    public int search2(int[] nums, int target) {
+        int n = nums.length, l = 0, r = n - 1;
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (target == nums[mid]) {
+                return mid;
+            }
+//            如果mid在左侧那么左边是有序序列，如果 target属于右侧的话就l = mid + 1;否则就 r = mid - 1;
+//            mid在右侧同理
+            if (nums[mid] >= nums[0]) {
+                if (target > nums[mid] || target < nums[0]) {
+                    l = mid + 1;
+                } else {
+                    r = mid - 1;
+                }
+            } else {
+                if (target > nums[mid] && target < nums[0]) {
+                    l = mid + 1;
+                } else {
+                    r = mid - 1;
+                }
+            }
+        }
+        return nums[l] == target ? l : -1;
+
+    }
+
+    //    153. 寻找旋转排序数组中的最小值
+    public int findMin1(int[] nums) {
+        int l = 0, r = nums.length - 1;
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] < nums[r]) {
+                r = mid;
+            } else if (nums[mid] > nums[r]) {
+                l = mid + 1;
+            } else {
+                r--;
+            }
+        }
+        return nums[l];
+
+    }
+
+    //    改编为找最大 153. 寻找旋转排序数组中的最小值
+    public int findMin3(int[] nums) {
+        int l = 0, r = nums.length;
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] < nums[l]) {
+                r = mid;
+            } else if (nums[mid] > nums[l]) {
+                l = mid;
+            } else {
+                l++;
+            }
+        }
+        return nums[l];
+
+    }
+
+//---------------2023.8.23之前：
+
+    //    540. 有序数组中的单一元素
+    public int singleNonDuplicate(int[] nums) {
+
+        int l = 0, r = nums.length;
+        while (l < r) {
+            int mid = l + (l + r) / 2;
+            if (nums[mid] == nums[mid ^ 1]) {
+                l = mid + 1;
+            } else {
+                r = mid;
+            }
+        }
+        return nums[l];
+    }
+
+    //    224. 基本计算器
+    public int calculate(String s) {
+        Deque<Character> q = new LinkedList<>();
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) != ' ' && q.offer(s.charAt(i))) ;
+        }
+        return calculate(q);
+    }
+
+    public int calculate(Deque<Character> q) {
+        Stack<Integer> stack = new Stack<>();
+        Character c, sign = '+';
+        Integer num = 0;
+        while (!q.isEmpty()) {
+            c = q.poll();
+            if (Character.isDigit(c)) {
+                num = num * 10 + (c - '0');
+            }
+            if (c == '(') {
+//                stack.push(calculate(q));
+                num = calculate(q);
+            }
+
+            if (!Character.isDigit(c) || q.isEmpty()) {
+                switch (sign) {
+                    case '+': {
+                        stack.push(num);
+                        break;
+                    }
+                    case '-': {
+                        System.out.println(-num);
+                        stack.push(-num);
+                        break;
+                    }
+                    case '*': {
+                        stack.push(stack.pop() * num);
+                        break;
+                    }
+                    case '/': {
+                        stack.push(stack.pop() / num);
+                        break;
+                    }
+                }
+                sign = c;
+                num = 0;
+            }
+            if (c == ')') {
+                System.out.println(stack);
+                break;
+            }
+        }
+        return stack.stream().mapToInt(Integer::intValue).sum();
+    }
+
+    //43. 字符串相乘
+    public String multiply(String num1, String num2) {
+        int m = num1.length(), n = num2.length();
+        int[] res = new int[m + n], arr1 = new int[m], arr2 = new int[n];
+        for (int i = 0; i < m; i++) {
+            arr1[i] = num1.charAt(i) - '0';
+        }
+        for (int i = 0; i < n; i++) {
+            arr2[i] = num2.charAt(i) - '0';
+        }
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                int t = arr1[i] * arr2[j];
+//                要加的下标位置十位数对应的是i + j，个位数对应的是i + j + 1,
+                int sum = res[i + j + 1] + t;
+                res[i + j + 1] = sum % 10;
+                res[i + j] += sum / 10;//进位的事情会由下一次循环的时候处理，最后得出的结果是进位过的，但是中间过程res的某一个位置可能出现超过9的数。
+            }
+        }
+        int k = 0;
+        while (k < res.length && res[k] == 0) k++;
+        StringBuilder sb = new StringBuilder();
+        for (int i = k; i < res.length; i++) {
+            sb.append(res[i]);
+        }
+        return "".equals(sb.toString()) ? "0" : sb.toString();
+    }
+
+    //659. 分割数组为连续子序列
+    public boolean isPossible(int[] nums) {
+        Map<Integer, Integer> freq = new HashMap<>();
+        Map<Integer, Integer> need = new HashMap<>();
+        Arrays.stream(nums).forEach(e -> freq.put(e, freq.getOrDefault(e, 0) + 1));
+
+        for (int num : nums) {
+            if (freq.get(num) == 0) {
+                continue;
+            }
+            if (need.containsKey(num) && need.get(num) > 0) {
+                freq.put(num, freq.get(num) - 1);
+                need.put(num, need.get(num) - 1);
+                need.put(num + 1, need.getOrDefault(num + 1, 0) + 1);
+            } else if (freq.containsKey(num) && freq.get(num) > 0 && freq.containsKey(num + 1) && freq.get(num + 1) > 0 && freq.containsKey(num + 2) && freq.get(num + 2) > 0) {
+                freq.put(num, freq.get(num) - 1);
+                freq.put(num + 1, freq.get(num + 1) - 1);
+                freq.put(num + 2, freq.get(num + 2) - 1);
+                need.put(num + 3, need.getOrDefault(num + 3, 0) + 1);
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     //    作者：LeetCode-Solution
 //    链接：https://leetcode.cn/problems/sqrtx/solution/x-de-ping-fang-gen-by-leetcode-solution/
 //    来源：力扣（LeetCode）
 //    著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 
-    //    重要理论知识：一个整数的平方根肯定不会超过它自己的一半 ，因为是要求整数部分 因此可以直接int除，整体的流程就是左右两边取中点，大了右边左移1，小了左边右移1
+    // 重要：215. 数组中的第K个最大元素 topK问题
+    public int findKthLargest(int[] nums, int k) {
+        shuffle(nums);
+        int n = nums.length, l = 0, r = n - 1;
+        k = n - k;
+        while (l <= r) {
+            int p = part(nums, l, r);
+            if (p == k) {
+                return nums[p];
+            } else if (p < k) {
+                l = p + 1;
+            } else if (p > k) {
+                r = p - 1;
+            }
+        }
+        return -1;
+    }
+
+    //    堆排序做法
+    public int findKthLargest2(int[] nums, int k) {
+        int n = nums.length;
+        buildHeap2(nums);
+//        k++;
+        for (int i = 0; i < k - 1; i++) {
+            swap(nums, 0, n - 1 - i);
+            down2(nums, 0, n - 1 - i);
+        }
+        return nums[0];
+    }
+
+    public void buildHeap2(int[] nums) {
+        int n = nums.length;
+        for (int i = n / 2; i >= 0; i--) {
+            down2(nums, i, n);
+        }
+    }
+
+    public void down2(int[] nums, int p, int end) {
+        int c = p * 2 + 1;
+        while (c < end) {
+            c = c + 1 < end && nums[c + 1] > nums[c] ? c + 1 : c;
+            if (nums[p] < nums[c]) {
+                swap(nums, p, c);
+            }
+            p = c;
+            c = p * 2 + 1;
+        }
+    }
+
+
+    //    912. 排序数组
+    public int[] sortArray1(int[] nums) {
+        shuffle(nums);
+        qsort(nums, 0, nums.length - 1);
+        return nums;
+    }
+
+    public void qsort(int[] nums, int l, int r) {
+        if (l < r) {
+            int p = part(nums, l, r);
+            qsort(nums, l, p - 1);
+            qsort(nums, p + 1, r);
+        }
+    }
+
+    public void shuffle(int[] nums) {
+        Random random = new Random();
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            int t = i + random.nextInt(n - i);
+            swap(nums, i, t);
+        }
+    }
+
+    public int part(int[] list, int l, int r) {
+        int mid = list[l];
+        while (l < r) {
+            while (l < r && list[r] >= mid) r--;
+            list[l] = list[r];
+            while (l < r && list[l] <= mid) l++;
+            list[r] = list[l];
+        }
+        list[l] = mid;
+        return l;
+    }
+
+    //    堆排序
+    public int[] sortArray(int[] nums) {
+        int n = nums.length;
+        buildHeap(nums);
+        for (int i = n - 1; i >= 0; i--) {
+            swap(nums, 0, i);
+            down(nums, 0, i);
+        }
+        return nums;
+    }
+
+    public void buildHeap(int[] nums) {
+        int n = nums.length;
+        for (int i = n / 2; i >= 0; i--) {
+            down(nums, i, n);
+        }
+    }
+
+    //    调整堆
+    public void down(int[] nums, int p, int end) {
+        int n = nums.length, c = p * 2 + 1;
+        while (c < end) {
+            c = c + 1 < end && nums[c + 1] > nums[c] ? c + 1 : c;
+            if (nums[p] < nums[c]) {
+                swap(nums, p, c);
+            }
+            p = c;
+            c = p * 2 + 1;
+        }
+    }
+
+
+    //    69. x 的平方根 重要理论知识：一个整数的平方根肯定不会超过它自己的一半 ，因为是要求整数部分 因此可以直接int除，整体的流程就是左右两边取中点，大了右边左移1，小了左边右移1
     public int mySqrt(int x) {
         int left = 0, right = x, ans = -1;
         while (left <= right) {
@@ -193,35 +590,65 @@ public class Numbers {
     }
 
     public int lowerBound(int[] nums, int target) {
-        int l = 0, r = nums.length;
-        while (l < r) {//跳出条件是l==r 也就是[nums.length,nums.length)
+        int l = 0, r = nums.length - 1;
+        while (l <= r) {
             int mid = (l + r) / 2;
             if (target == nums[mid]) {
-                r = mid;// 右边是闭区间 此时变成[l,mid)
+                r = mid - 1;
             } else if (target < nums[mid]) {
-                r = mid;
+                r = mid - 1;
             } else if (target > nums[mid]) {
                 l = mid + 1;
             }
         }
-        return l;//正常的话需要加判断nums[l]!= target? -1 : l;
-
+        return l;
     }
 
     public int upperBound(int[] nums, int target) {
-        int l = 0, r = nums.length;
-        while (l < r) {//跳出条件是l==r 也就是[nums.length,nums.length)
+        int l = 0, r = nums.length - 1;
+        while (l <= r) {
             int mid = (l + r) / 2;
-            if (target == nums[mid]) {
-                l = mid + 1;// 右边是闭区间 此时变成[l,mid)
-            } else if (target < nums[mid]) {
-                r = mid;
-            } else if (target > nums[mid]) {
+            if (nums[mid] == target) {
+                l = mid + 1;
+            } else if (nums[mid] > target) {
+                r = mid - 1;
+            } else if (nums[mid] < target) {
                 l = mid + 1;
             }
         }
-        return l;//正常的话需要加判断nums[l-1]!= target? -1 : l;
+        return l;
     }
+
+//    public int lowerBound(int[] nums, int target) {
+//        int l = 0, r = nums.length;
+//        while (l < r) {//跳出条件是l==r 也就是[nums.length,nums.length)
+//            int mid = (l + r) / 2;
+//            if (target == nums[mid]) {
+//                r = mid;// 右边是闭区间 此时变成[l,mid)
+//            } else if (target < nums[mid]) {
+//                r = mid;
+//            } else if (target > nums[mid]) {
+//                l = mid + 1;
+//            }
+//        }
+//        return l;//正常的话需要加判断nums[l]!= target? -1 : l;
+//
+//    }
+
+//    public int upperBound(int[] nums, int target) {
+//        int l = 0, r = nums.length;
+//        while (l < r) {//跳出条件是l==r 也就是[nums.length,nums.length)
+//            int mid = (l + r) / 2;
+//            if (target == nums[mid]) {
+//                l = mid + 1;// 右边是闭区间 此时变成[l,mid)
+//            } else if (target < nums[mid]) {
+//                r = mid;
+//            } else if (target > nums[mid]) {
+//                l = mid + 1;
+//            }
+//        }
+//        return l;//正常的话需要加判断nums[l-1]!= target? -1 : l;
+//    }
 
     //704. 二分查找
     public int search(int[] nums, int target) {
@@ -291,31 +718,24 @@ public class Numbers {
 //75. 颜色分类 双指针
 
     public void sortColors(int[] nums) {
-        int l = 0, r = nums.length - 1;
-        while (l < nums.length - 1 && nums[l] == 0) l++;
-        while (r > 0 && nums[r] == 2) r--;//坑
+        int l = 0, n = nums.length, r = n - 1;
+        for (int i = 0; i <= r; ) {//!!!等号 i不要加
+            if (nums[i] == 2) {
+                while (i < r && nums[r] == 2) {
+                    r--;
+                }
+                MyUtile.swap(nums, i, r);
 
-        for (int i = l; i <= r; ) {//坑
-            int t;
-            if (nums[i] == 0 && i > l) {
-//                t = nums[i];
-//                nums[i] = nums[l];
-//                nums[l] = t;
-                nums[i] = nums[i] ^ nums[l];
-                nums[l] = nums[i] ^ nums[l];
-                nums[i] = nums[i] ^ nums[l];
-                while (l < nums.length - 1 && nums[l] == 0) l++;
-            } else if (nums[i] == 2 && i < r) {
-                nums[i] = nums[i] ^ nums[r];
-                nums[r] = nums[i] ^ nums[r];
-                nums[i] = nums[i] ^ nums[r];
-//                t = nums[i];
-//                nums[i] = nums[r];
-//                nums[r] = t;
-                while (r > 1 && nums[r] == 2) r--;
-            } else i++;//坑
+                r--;
+            } else if (nums[i] == 0 && i != l) {
+                MyUtile.swap(nums, i, l);
+                l++;
+            } else {
+                i++;//!!!
+            }
         }
-        new SortTest().dis(nums);
+        MyUtile.dis(nums);
+
     }
 
 
@@ -522,7 +942,7 @@ public class Numbers {
         return list.get(0);
     }
 
-    //    剑指 Offer II 003. 前 n 个数字二进制中 1 的个数
+    //    338. 比特位计数 剑指 Offer II 003. 前 n 个数字二进制中 1 的个数
     public int[] countBits(int n) {
         ArrayList<Integer> list = new ArrayList<>();
         Stream.iterate(0, i -> i + 1).limit(n + 1)
@@ -539,6 +959,13 @@ public class Numbers {
             count++;
         }
         return count;
+    }
+//    231. 2 的幂
+
+    public boolean isPowerOfTwo(int n) {
+        if (n <= 0) return false;
+        return (n & (n - 1)) == 0;
+
     }
 
     //    剑指 Offer II 068. 查找插入位置
@@ -1246,7 +1673,7 @@ public class Numbers {
     }
 
     //    11. 盛最多水的容器
-    public int maxArea(int[] height) {
+    public int maxArea2(int[] height) {
         int n = height.length;
         int l = 0, r = n - 1, lmax = Integer.MIN_VALUE, rmax = Integer.MIN_VALUE, res = 0;
         while (l < r) {
@@ -1373,13 +1800,79 @@ public class Numbers {
         int[] res = new int[temperatures.length];
         for (int i = temperatures.length - 1; i >= 0; i--) {
             while (!stack.isEmpty() && stack.peek().getKey() <= temperatures[i] && stack.pop() != null) ;
-            res[i] = stack.isEmpty() ? 0 : stack.peek().getValue()-i;
+            res[i] = stack.isEmpty() ? 0 : stack.peek().getValue() - i;
             stack.push(new Pair<>(temperatures[i], i));
         }
         return res;
 
     }
 
+    //    //16. 最接近的三数之和
+    public int threeSumClosest(int[] nums, int target) {
+
+//    双指针解决
+        Arrays.sort(nums);
+        int n = nums.length, l, r, sum = 0, min = 99999;
+        for (int i = 0; i < n; i++) {
+            l = i + 1;
+            r = n - 1;
+            while (l < r) {
+                sum = nums[i] + nums[l] + nums[r];
+                if (sum == target) {
+                    return sum;
+                }
+                min = Math.abs(sum - target) < Math.abs(min - target) ? sum : min;
+                if (sum < target) {
+                    l++;
+                } else {
+                    r--;
+                }
+            }
+        }
+        return min;
+    }
+
+    //
+//    //27. 移除元素
+    public int removeElement(int[] nums, int val) {
+        if (nums == null || nums.length == 0) return 0;
+        int l = 0, r = nums.length - 1, count = 0;
+        while (l <= r) {
+            while (l < r && nums[r] == val) {
+                r--;
+            }
+            if (nums[l] == val) {
+                swap(nums, l, r);
+            }
+            l++;
+        }
+        while (nums[r] == val) {
+            r--;
+        }
+        return r + 1;
+    }
+
+    //    //11. 盛最多水的容器 双指针
+    public int maxArea(int[] height) {
+        int n = height.length, l = 0, r = n, max = 0;
+        while (l < r) {
+            max = Math.max((r - l) * Math.min(height[l], height[r]), max);
+            if (height[l] < height[r]) {
+                l++;
+            } else {
+                r--;
+            }
+        }
+        return max;
+
+    }
+
+
+    public static void swap(int[] nums, int a, int b) {
+        int t = nums[a];
+        nums[a] = nums[b];
+        nums[b] = t;
+    }
 
     public static void main(String[] args) {
         Numbers numbers = new Numbers();
@@ -1397,9 +1890,12 @@ public class Numbers {
 //        numbers.topKFrequent(new int[]{1, 1, 1, 2, 2, 3}, 2);
 //        numbers.sortColors(new int[]{2, 0, 1});
 //        numbers.findMid(new int[]{1, 3}, new int[]{2, 4});
-        int[] nums1 = new int[]{4, 1, 2};
-        int[] nums2 = new int[]{1, 2, 3, 4, 3, 1, 2, 3, 4, 3};
-        System.out.println(numbers.nextGreaterElements(nums2));
+        int[] nums1 = new int[]{1};
+        int[] nums2 = new int[]{3, 2, 1, 5, 6, 4};
+        System.out.println(numbers.findKthLargest3(nums1, 1));
+//        System.out.println(numbers.multiply("0", "0"));
+//        System.out.println(numbers.findMin3(nums1));
+//        System.out.println(numbers.removeElement(nums1, 3));
 //        System.out.println(numbers.findMedianSortedArrays2(nums1, nums2));
 //        numbers.merge(nums1, 3, nums2, 3);
 //        numbers.generate(5);
@@ -1416,28 +1912,25 @@ class MedianFinder {
     PriorityQueue<Integer> large;
 
     public MedianFinder() {
-        small = new PriorityQueue<>((a, b) -> b - a);//大根
-        large = new PriorityQueue<>();//小根
+        small = new PriorityQueue<Integer>((o1, o2) -> o2 - o1);
+        large = new PriorityQueue<Integer>();
     }
 
     public void addNum(int num) {
         if (small.size() <= large.size()) {
             large.offer(num);
-            small.offer(large.poll());
+            small.add(large.poll());
         } else {
             small.offer(num);
-            large.offer(small.poll());
+            large.add(small.poll());
         }
+
+
     }
 
     public double findMedian() {
-        if (small.size() < large.size()) {
-            return large.peek();
-        } else if (small.size() > large.size()) {
-            return small.peek();
-        } else {
-            return (large.peek() + small.peek()) / 2.0;
-        }
+        return (small.size() + large.size()) % 2 == 0 ? (small.peek() + large.peek()) / 2.0 : small.size() > large.size() ? small.peek() : large.peek();
+
     }
 }
 

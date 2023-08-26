@@ -1,7 +1,6 @@
 package category;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class Node {
@@ -136,6 +135,27 @@ public class Tree {
             }
         }
         return res;
+    }
+
+    //    145. 二叉树的后序遍历
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<TreeNode> res = new ArrayList<>();
+        Stack<TreeNode> stack = new Stack<>();
+        TreeNode pre = null;
+        while (!stack.isEmpty() || root != null) {
+            while (root != null) {
+                stack.push(root);
+                root = root.left;
+            }
+            TreeNode cur = stack.peek();
+            if (cur.right != null && cur.right != pre) {
+                root = cur.right;
+            } else {
+                res.add(pre = stack.pop());
+            }
+        }
+        return res.stream().map(e -> e.val).collect(Collectors.toList());
+
     }
 
     //101. 对称二叉树
@@ -273,6 +293,259 @@ public class Tree {
 
     }
 
+    //103. 二叉树的锯齿形层序遍历
+    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+
+        Deque<TreeNode> q = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        boolean left = true;
+        q.offer(root);
+        while (!q.isEmpty()) {
+            int len = q.size() + 1;
+            List<Integer> t = new ArrayList<TreeNode>(q).stream().map(e -> e.val).collect(Collectors.toList());
+            if (!left) {
+                Collections.reverse(t);
+            }
+            res.add(t);
+            left = !left;
+
+            while ((len = len - 1) > 0) {
+                TreeNode node = q.poll();
+                if (node.left != null) q.offer(node.left);
+                if (node.right != null) q.offer(node.right);
+            }
+        }
+        return res;
+    }
+
+    //    剑指 Offer 26. 树的子结构
+    public boolean isSubStructure(TreeNode A, TreeNode B) {
+        if (B == null && A != null || A == null && B != null) {
+            return false;
+        }
+        Stack<TreeNode> stack = new Stack<>();
+        TreeNode cur, pre = null;
+        boolean res = false;
+        while (!stack.isEmpty() || A != null) {
+            while (A != null) {
+                if (A.val == B.val && allMatch(A, B)) {
+                    return true;
+                }
+                stack.push(A);
+                A = A.left;
+            }
+            cur = stack.peek();
+            if (cur.right != null && cur.right != pre) {
+                A = cur.right;
+            } else {
+                pre = stack.pop();
+            }
+        }
+        return false;
+    }
+
+    public boolean allMatch(TreeNode A, TreeNode B) {
+        Stack<TreeNode> stack = new Stack<TreeNode>();
+        Stack<TreeNode> stack1 = new Stack<TreeNode>();
+        TreeNode cur, cur1, pre = null, pre1 = null;
+
+        while (!stack.isEmpty() || B != null) {
+            while (B != null) {
+                if (A == null || B.val != A.val) {
+                    return false;
+                }
+                stack.push(B);
+                stack1.push(A);
+                B = B.left;
+                A = A.left;
+            }
+
+            cur = stack.peek();
+            cur1 = stack1.peek();
+            if (cur.right != null && cur.right != pre) {
+                B = cur.right;
+                A = cur1.right;
+            } else {
+                pre = stack.pop();
+                pre1 = stack1.pop();
+            }
+        }
+        return true;
+    }
+
+    //    剑指 Offer 26. 树的子结构(递归版本)
+    public boolean isSubStructure1(TreeNode A, TreeNode B) {
+        if (B == null) {
+            return false;
+        }
+        if (A == null) {
+            return false;
+        }
+        if (A.val == B.val && allMatch1(A, B)) {
+            return true;
+        }
+        return isSubStructure1(A.left, B) || isSubStructure1(A.right, B);
+
+    }
+
+    public boolean allMatch1(TreeNode A, TreeNode B) {
+        if (B == null) {
+            return true;
+        }
+        if (A == null && B != null || A.val != B.val) {
+            return false;
+        }
+        return allMatch1(A.left, B.left) && allMatch1(A.right, B.right);
+    }
+
+
+    //    199. 二叉树的右视图
+    public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        rightSidePreOrder(root, res, 0, new HashSet<>());
+        return res;
+    }
+
+    public void rightSidePreOrder(TreeNode root, List<Integer> res, int level, Set<Integer> v) {
+        if (root == null) {
+            return;
+        }
+        if (v.add(level) && res.add(root.val)) ;
+        rightSidePreOrder(root.right, res, level + 1, v);
+        rightSidePreOrder(root.left, res, level + 1, v);
+    }
+
+    //    199. 二叉树的右视图(非递归)
+    public List<Integer> rightSideView1(TreeNode root) {
+        Stack<TreeNode> nodeStack = new Stack<>();
+        Stack<Integer> deepStack = new Stack<>();
+        List<Integer> res = new ArrayList<>();
+        Set<Integer> set = new HashSet<>();
+        int level = 0;
+        while (!nodeStack.isEmpty() || root != null) {
+            while (root != null) {
+                level++;
+                nodeStack.push(root);
+                deepStack.push(level);
+                if (set.add(level) && res.add(root.val)) ;
+                root = root.right;
+            }
+            root = nodeStack.pop().left;
+            level = deepStack.pop();//在出栈的时候记录这个level，因为下一个点肯定是基于当前pop出来的的这个点的孩子节点，肯定是在这个level的基础上加一
+        }
+        return res;
+    }
+
+    //105. 从前序与中序遍历序列构造二叉树
+    Map<Integer, Integer> map = new HashMap<>();
+
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        for (int i = 0; i < preorder.length; i++) {
+            map.put(inorder[i], i);
+        }
+        return buildTree(preorder, 0, preorder.length - 1, inorder, 0, inorder.length - 1);
+    }
+
+    public TreeNode buildTree(int[] preorder, int preL, int preR, int[] inorder, int inL, int inR) {
+        if (preL > preR || inL > inR) {
+            return null;
+        }
+        TreeNode root = new TreeNode(preorder[preL]);
+        if (preL == preR) {
+            return root;
+        }
+
+        int len = map.get(root.val) - inL;
+        root.left = buildTree(preorder, preL + 1, preL + len, inorder, inL, map.get(root.val) - 1);
+        root.right = buildTree(preorder, preL + len + 1, preR, inorder, map.get(root.val) + 1, inR);
+        return root;
+    }
+
+
+    //106. 从中序与后序遍历序列构造二叉树
+    Map<Integer, Integer> postmap = new HashMap<>();
+
+    public TreeNode buildTree2(int[] inorder, int[] postorder) {
+        for (int i = 0; i < inorder.length; i++) {
+            postmap.put(inorder[i], i);
+        }
+        return buildTree3(inorder, 0, inorder.length - 1, postorder, 0, postorder.length - 1);
+    }
+
+    public TreeNode buildTree3(int[] inorder, int inL, int inR, int[] postorder, int postL, int postR) {
+        if (inL > inR || postL > postR) {
+            return null;
+        }
+        TreeNode root = new TreeNode(postorder[postR]);
+        if (postL == postR) {
+            return root;
+        }
+        int ind = postmap.get(root.val);
+        int len = postmap.get(root.val) - inL;
+        root.left = buildTree3(inorder, inL, ind - 1, postorder, postL, postL + len - 1);
+        root.right = buildTree3(inorder, ind + 1, inR, postorder, postL + len, postR - 1);
+        return root;
+    }
+
+    //    654. 最大二叉树
+    public TreeNode constructMaximumBinaryTree(int[] nums) {
+        return constructMaximumBinaryTree(nums, 0, nums.length - 1);
+    }
+
+    public TreeNode constructMaximumBinaryTree(int[] nums, int l, int r) {
+        if (l > r) {
+            return null;
+        }
+        int ind = getMaxInd(nums, l, r);
+        TreeNode root = new TreeNode(nums[ind]);
+        if (l == r) {
+            return root;
+        }
+        root.left = constructMaximumBinaryTree(nums, l, ind - 1);
+        root.right = constructMaximumBinaryTree(nums, ind + 1, r);
+        return root;
+    }
+
+    public int getMaxInd(int[] nums, int l, int r) {
+        int max = nums[l], res = l;
+        for (int i = l; i <= r; i++) {
+            if (nums[i] > max) {
+                res = i;
+                max = nums[i];
+            }
+        }
+        return res;
+    }
+
+    //889. 根据前序和后序遍历构造二叉树
+    Map<Integer, Integer> prepostmap = new HashMap<>();
+
+    public TreeNode constructFromPrePost(int[] preorder, int[] postorder) {
+        for (int i = 0; i < postorder.length; i++) {
+            prepostmap.put(postorder[i], i);
+        }
+        return constructFromPrePost(preorder, 0, preorder.length - 1, postorder, 0, postorder.length - 1);
+    }
+
+    public TreeNode constructFromPrePost(int[] preorder, int preL, int preR, int[] postorder, int postL, int postR) {
+        if (preL > preR) {
+            return null;
+        }
+        TreeNode root = new TreeNode(preorder[preL]);
+        if (preL == preR) {
+            return root;
+        }
+        //寻找左子树的根的下标，按照这个根进行划分
+        int ind = prepostmap.get(preorder[preL + 1]);
+        root.left = constructFromPrePost(preorder, preL + 1, preL + 1 + ind - postL, postorder, postL, ind);
+        root.right = constructFromPrePost(preorder, preL + ind - postL + 2, preR, postorder, ind + 1, postR - 1);
+        return root;
+    }
+
+
     //230. 二叉搜索树中第K小的元素
     public int kthSmallest(TreeNode root, int k) {
 
@@ -321,53 +594,73 @@ public class Tree {
 
     }
 
-    //236. 二叉树的最近公共祖先
+    //236. 二叉树的最近公共祖先 递归做法
+    public TreeNode lowestCommonAncestor2(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null) {
+            return null;
+        }
+        if (root == p || root == q) {
+            return root;
+        }
+        TreeNode l = lowestCommonAncestor(root.left, p, q);
+        TreeNode r = lowestCommonAncestor(root.right, p, q);
+        if (l != null && r != null) {
+            return root;
+        }
+        if (l != null) {
+            return l;
+        }
+        return r;
+    }
+
+    public TreeNode lca(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null) {
+            return null;
+        }
+        if (root == p || root == q) {
+            return root;
+        }
+        TreeNode l = lca(root.left, p, q);
+        TreeNode r = lca(root.right, p, q);
+        if (l != null && r != null) {
+            return root;
+        }
+        if (l != null) {
+            return l;
+        }
+        return r;
+    }
+
+    //236. 二叉树的最近公共祖先 栈后序做法
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
 //        Comparator
-        Stack<TreeNode> stack = new Stack<TreeNode>();
-        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-        TreeNode r = root, top, pre = null;
-//        stack.push(r);
-        while (Objects.nonNull(r) || !stack.isEmpty()) {
-            if (Objects.nonNull(r)) {
+        Stack<TreeNode> stack = new Stack<>();
+        Set<TreeNode> set = new HashSet<>();
+        TreeNode cur, pre = null, r = root;
+        while (!stack.isEmpty() || r != null) {
+            while (r != null) {
                 stack.push(r);
-                r = r.left;
-            } else {
-                top = stack.peek();
-                if (Objects.equals(top.val, p.val)) {
-                    map = stack.stream().map(e -> e.val).collect(Collectors.toMap(k -> k, Function.identity()));
-                }
-                if (Objects.nonNull(top.right) && !Objects.equals(top.right, pre)) {
-                    r = top.right;
-                } else {
-                    pre = stack.pop();
-                }
-            }
-        }
-        r = root;
-        pre = null;
-        while (Objects.nonNull(r) || !stack.isEmpty()) {
-            if (Objects.nonNull(r)) {
-                stack.push(r);
-                r = r.left;
-            } else {
-                top = stack.peek();
-                if (Objects.equals(top.val, q.val)) {
-                    while (!stack.isEmpty()) {
-                        top = stack.pop();
-                        if (map.containsKey(top.val)) {
-                            return top;
+                if (r == p || r == q) {
+                    if (set.isEmpty()) {
+                        set.addAll(new HashSet<>(stack));
+                    } else {
+                        while (!stack.isEmpty()) {
+                            if (set.contains(stack.peek())) {
+                                return stack.pop();
+                            }
+                            stack.pop();
                         }
                     }
                 }
-                if (Objects.nonNull(top.right) && !Objects.equals(top.right, pre)) {
-                    r = top.right;
-                } else {
-                    pre = stack.pop();
-                }
+                r = r.left;
+            }
+            cur = stack.peek();
+            if (cur.right != null && cur.right != pre) {
+                r = cur.right;
+            } else {
+                pre = stack.pop();
             }
         }
-
         return root;
 
     }
@@ -441,6 +734,7 @@ public class Tree {
 
     }
 
+    //543. 二叉树的直径
     int max = 0;
 
     public int diameterOfBinaryTree(TreeNode root) {
@@ -458,6 +752,37 @@ public class Tree {
 //        System.out.println(max);
         return Math.max(l, r) + 1;
     }
+
+    //    124. 二叉树中的最大路径和
+    int maxSum = -999999;
+
+    public int maxPathSum(TreeNode root) {
+        postOrder3(root);
+        return maxSum;
+    }
+
+    //    方法的含义是root节点下的这棵树的最大值
+    public int postOrder3(TreeNode root) {
+        if (Objects.equals(null, root)) {
+            return -999999;
+        }
+        int l = postOrder3(root.left);
+        int r = postOrder3(root.right);
+        PriorityQueue<Integer> heap = new PriorityQueue<>((o1, o2) -> o2 - o1);
+//        使用大根堆对六种情况取最大：
+//        当前节点不连接的情况（当前为负数连接的话会降低总体的值）：单独左子树l，单独右子树r     当前节点连接的情况分三种（因为左右可能为负数，所以左右单独考虑）：左+root，右+root，左右+root    直接当前，左右都不连接：root
+        heap.offer(l);
+        heap.offer(r);
+        heap.offer(root.val);
+        heap.offer(l + r + root.val);
+        heap.offer(l + root.val);
+        heap.offer(r + root.val);
+        maxSum = Math.max(maxSum, heap.peek());
+        heap.clear();
+//        return返回的是当前节点root必须连接的情况，就是当前这棵树的最大值 如果root不连接会导致root这个节点断掉
+        return Math.max(Math.max(l, r) + root.val, root.val);
+    }
+
 
     //617. 合并二叉树
     public TreeNode mergeTrees(TreeNode root1, TreeNode root2) {
@@ -578,10 +903,13 @@ public class Tree {
 
     public static void main(String[] args) {
         Tree o = new Tree();
-        TreeNode root1 = o.buildBylevel(new TreeNode(), new int[]{1, 3, 2, 5});
-        TreeNode root2 = o.buildBylevel(new TreeNode(), new int[]{2, 1, 3, -1, 4, -1, 7});
+        TreeNode root = o.buildBylevel(new TreeNode(), new int[]{3, 2, 1, 6, 0, 5});
+        TreeNode root2 = o.buildBylevel(new TreeNode(), new int[]{9, 3, 15, 20, 7});
 
-//        System.out.println(o.inorderTraversal(root));
+        System.out.println(o.levelOrder(o.constructMaximumBinaryTree(new int[]{3, 2, 1, 6, 0, 5})));
+//        System.out.println(o.rightSideView1(root));
+//        System.out.println(o.zigzagLevelOrder(root));
+//        System.out.println(o.maxPathSum(root));
 //        System.out.println(o.maxDepth(root));
 //        System.out.println(o.isValidBST(root));
 //        System.out.println(o.levelOrder(root));
@@ -589,7 +917,7 @@ public class Tree {
 //        System.out.println(o.postOrder(root));
 //        System.out.println(o.diameterOfBinaryTree(root));
 //        o.mergeTrees(root1, root2);
-        System.out.println(o.openLock(new String[]{"8888"}, "0009"));
+//        System.out.println(o.openLock(new String[]{"8888"}, "0009"));
 //        System.out.println(o.openLock(new String[]{"8887","8889","8878","8898","8788","8988","7888","9888"}, "8888"));
     }
 

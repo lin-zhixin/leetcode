@@ -6,6 +6,306 @@ import java.util.*;
 
 // 字符串处理
 public class Strings {
+    //    392. 判断子序列 二分查找
+    public boolean isSubsequence(String s, String t) {
+        Map<Character, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < t.length(); i++) {
+            char c = t.charAt(i);
+            int finalI = i;
+            map.compute(c, (k, v) -> {
+                if (Objects.isNull(v)) {
+                    v = new ArrayList<>();
+                }
+                v.add(finalI);
+                return v;
+            });
+        }
+        System.out.println(map);
+        int j = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!map.containsKey(c)) {
+                return false;
+            }
+            int pos = lower_bound(map.get(c), j);
+            if (pos == map.get(c).size()) {
+                return false;
+            }
+            j = map.get(c).get(pos) + 1;
+        }
+        return true;
+
+    }
+
+    public int lower_bound(List<Integer> list, int k) {
+        int l = 0, r = list.size(), mid;
+        while (l < r) {
+//            [)
+            mid = l + (r - l) / 2;
+            if (list.get(mid) == k) {
+                r = mid;
+            } else if (list.get(mid) < k) {
+                l = mid + 1;
+            } else if (list.get(mid) > k) {
+                r = mid;
+            }
+        }
+        return l;
+    }
+
+    //    792. 匹配子序列的单词数
+    public int numMatchingSubseq(String s, String[] words) {
+        Map<Character, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            int finalI = i;
+            map.compute(c, (k, v) -> {
+                if (Objects.isNull(v)) {
+                    v = new ArrayList<>();
+                }
+                v.add(finalI);
+                return v;
+            });
+        }
+        System.out.println(map);
+        int sum = 0;
+        for (String word : words) {
+            int j = 0;
+            for (int i = 0; i < word.length(); i++) {
+                char c = word.charAt(i);
+                if (!map.containsKey(c)) {
+                    sum--;
+                    break;
+                }
+                int pos = lower_bound(map.get(c), j);
+                if (pos == map.get(c).size()) {
+                    sum--;
+                    break;
+                }
+                j = map.get(c).get(pos) + 1;
+            }
+            sum++;
+
+        }
+        return sum;
+
+    }
+
+    //    20. 有效的括号
+    public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(' || c == '[' || c == '{') {
+                stack.push(c);
+            } else if (!stack.isEmpty()) {
+                if (c == ')' && stack.peek() == '(' || c == ']' && stack.peek() == '[' || c == '}' && stack.peek() == '{') {
+                    stack.pop();
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return stack.isEmpty();
+    }
+
+    //    921. 使括号有效的最少添加
+    public int minAddToMakeValid(String s) {
+        int rightNeed = 0, res = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                rightNeed++;
+            } else {
+                rightNeed--;
+            }
+            if (rightNeed == -1) {
+                rightNeed = 0;
+                res++;
+            }
+        }
+        return res + rightNeed;
+
+    }
+
+    //1541. 平衡括号字符串的最少插入次数
+    public int minInsertions(String s) {
+//        "(((()(()((())))(((()())))()())))(((()(()()((()()))"   31
+//        "(()))(()))()())))"   4   ()
+        int sum = 0, rightNeed = 0, res = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                if (rightNeed % 2 == 1) {
+//                    当前是左括号，如果前面的右括号需求如果是奇数说明至少需要再插入一个右括号
+//                    因为奇数个右括号必然不能匹配，如：((((()(  rightNeed是9，此时遍历到最后一个，是（，因此前面必须要插入至少一个右括号
+                    res++;
+                    rightNeed--;
+                }
+                rightNeed += 2;
+            } else {
+                rightNeed--;
+                if (rightNeed == -1) {
+//                    说明多了一个右括号，此时左边已经遍历过了 后面也是没法改变前面的情况的，因此只能插入一个左括号
+//                    因为插入一个左括号导致右括号的需求增加了一个
+                    res++;
+                    rightNeed = 1;
+                }
+            }
+        }
+        return res + rightNeed;
+
+    }
+
+    //    241. 为运算表达式设计优先级 分治法
+    public List<Integer> diffWaysToCompute(String expression) {
+        List<Integer> res = new ArrayList<>();
+        int n = expression.length();
+        if (n == 0) {
+            return res;
+        }
+        for (int i = 0; i < n; i++) {
+            char c = expression.charAt(i);
+            if (c == '-' || c == '*' || c == '+') {
+                List<Integer> left = diffWaysToCompute(expression.substring(0, i));
+                List<Integer> right = diffWaysToCompute(expression.substring(i + 1, n));
+                left.forEach(l ->
+                        right.forEach(r -> {
+                            if (c == '-') res.add(l - r);
+                            if (c == '*') res.add(l * r);
+                            if (c == '+') res.add(l + r);
+                        })
+                );
+            }
+        }
+        if (res.isEmpty()) {
+            res.add(Integer.parseInt(expression));
+        }
+        return res;
+    }
+
+    //76. 最小覆盖子串
+    public String minWindow(String s, String t) {
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> window = new HashMap<>();
+        for (int i = 0; i < t.length(); i++) {
+            need.put(t.charAt(i), need.getOrDefault(t.charAt(i), 0) + 1);
+        }
+        int l = 0, r = 0, start = 0, valid = 0, minlen = 99999;
+        while (r < s.length()) {
+            char cr = s.charAt(r++);
+            if (need.containsKey(cr)) {
+                window.put(cr, window.getOrDefault(cr, 0) + 1);
+                if (Objects.equals(need.get(cr), window.get(cr))) {
+                    valid++;
+                }
+
+            }
+//            r++;
+            while (valid == need.size()) {
+                if (r - l < minlen) {
+                    start = l;
+                    minlen = r - l;
+                }
+                char cl = s.charAt(l++);
+                if (need.containsKey(cl)) {
+                    if (Objects.equals(need.get(cl), window.get(cl))) {
+                        valid--;
+                    }
+                    window.put(cl, window.get(cl) - 1);
+//                    l++;
+                }
+            }
+//            System.out.println(s.substring(start, start + minlen));
+
+        }
+        System.out.println(s.substring(start, start + minlen));
+        return minlen == 99999 ? "" : s.substring(start, start + minlen);
+
+    }
+
+    //    567. 字符串的排列
+    public boolean checkInclusion(String s1, String s2) {
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> win = new HashMap<>();
+        for (int i = 0; i < s1.length(); i++) {
+            need.put(s1.charAt(i), need.getOrDefault(s1.charAt(i), 0) + 1);
+        }
+
+        int l = 0, r = 0, valid = 0;
+        while (r < s2.length()) {
+            char cr = s2.charAt(r++);
+            if (need.containsKey(cr)) {
+                win.put(cr, win.getOrDefault(cr, 0) + 1);
+                if (Objects.equals(need.get(cr), win.get(cr))) {
+                    valid++;
+                }
+                while (win.get(cr) > need.get(cr)) {
+                    char cl = s2.charAt(l++);
+                    if (Objects.equals(need.get(cl), win.get(cl))) {
+                        valid--;
+                    }
+                    win.put(cl, win.get(cl) - 1);
+                }
+                if (valid == need.size()) {
+                    return true;
+                }
+            } else {
+                l = r;
+                win.clear();
+                valid = 0;
+            }
+
+        }
+        return false;
+
+
+    }
+
+    //438. 找到字符串中所有字母异位词
+    public List<Integer> findAnagrams(String s, String p) {
+        Map<Character, Integer> need = new HashMap<>();
+        Map<Character, Integer> win = new HashMap<>();
+        List<Integer> res = new ArrayList<>();
+        for (int i = 0; i < p.length(); i++) {
+            need.put(p.charAt(i), need.getOrDefault(p.charAt(i), 0) + 1);
+        }
+        int l = 0, r = 0, valid = 0;
+        while (r < s.length()) {
+            char cr = s.charAt(r++);
+            if (need.containsKey(cr)) {
+                win.put(cr, win.getOrDefault(cr, 0) + 1);
+                if (Objects.equals(win.get(cr), need.get(cr))) {
+                    valid++;
+                }
+//                存在刚加的字符数量大于need的数量，因此需要缩小窗口到刚好等于need的窗口
+                while (win.get(cr) > need.get(cr)) {
+                    char cl = s.charAt(l++);
+                    if (Objects.equals(win.get(cl), need.get(cl))) {
+                        valid--;
+                    }
+                    win.put(cl, win.get(cl) - 1);
+                }
+//                满足条件 加入结果集并且缩小窗口
+                if (valid == need.size()) {
+                    res.add(l);
+                    char cl = s.charAt(l++);
+                    win.put(cl, win.get(cl) - 1);
+                    valid--;
+                }
+            } else {
+//                如果出现一个不在里面的说明这个字符串肯定不是 因此从下一个重新来检测
+                l = r;
+                win.clear();
+                valid = 0;
+            }
+        }
+        System.out.println(res);
+        return res;
+
+    }
 
     //    3. 无重复字符的最长子串
     public int lengthOfLongestSubstring(String s) {
@@ -44,31 +344,36 @@ public class Strings {
     //    KMP算法   28. 找出字符串中第一个匹配项的下标
     public int strStr(String haystack, String needle) {
         int[] next = getNext(needle);
-        for (int i = 0, j = 0; i < haystack.length(); i++) {
-            while (j > 0 && haystack.charAt(i) != needle.charAt(j)) {
-                j = next[j - 1];
+
+        for (int i = 0, k = 0; i < haystack.length(); i++) {
+            while (k > 0 && haystack.charAt(i) != needle.charAt(k)) {
+                k = next[k - 1];
+
             }
-            if (haystack.charAt(i) == needle.charAt(j)) {
-                j++;
+            if (haystack.charAt(i) == needle.charAt(k)) {
+                k++;
             }
-            if (j == needle.length()) {
-                return i - j + 1;
+            if (k == needle.length()) {
+                return i - k + 1;
             }
+
         }
         return -1;
     }
 
     public int[] getNext(String p) {
-        int[] next = new int[p.length()];
+        int n = p.length(), k = 0;
+        int[] next = new int[n];//存放的是长度 不是下标 只是在下面的while里面当做下标来用
         next[0] = 0;
-        for (int i = 1, j = 0; i < p.length(); i++) {
-            while (j > 0 && p.charAt(i) != p.charAt(j)) {
-                j = next[j - 1];
+        for (int i = 1; i < n; i++) {
+//            k就是上一个的next 就是next[i-1]
+            while (k > 0 && p.charAt(i) != p.charAt(k)) {
+                k = next[k - 1];//减一是因为这边k做下标用，和长度差1
             }
-            if (p.charAt(i) == p.charAt(j)) {
-                j++;
+            if (p.charAt(i) == p.charAt(k)) {
+                k++;//减一是因为这边k做下标用，和长度差1
             }
-            next[i] = j;
+            next[i] = k;
         }
         return next;
     }
@@ -185,14 +490,9 @@ public class Strings {
         if (strs == null || strs.length == 0) {
             return "";
         }
-        if (strs.length == 1) return strs[0];
-
-        int len = 9999;
-        for (int i = 0; i < strs.length; i++) {
-            len = Math.min(strs[i].length(), len);
-        }
-        int l = 0, r = len;
+        int l = 0, r = Arrays.stream(strs).mapToInt(String::length).min().orElse(0);
         while (l < r) {
+//            [)
             int mid = l + (r - l + 1) / 2;
             if (isCommonPrefix(strs, mid)) {
                 l = mid;
@@ -200,19 +500,12 @@ public class Strings {
                 r = mid - 1;
             }
         }
-        System.out.println(strs[0].substring(0, l));
         return strs[0].substring(0, l);
     }
 
     public boolean isCommonPrefix(String[] strs, int len) {
-//        if (len==0)return false;
-        String str0 = strs[0].substring(0, len);
-        for (int i = 1; i < strs.length; i++) {
-            if (!str0.equals(strs[i].substring(0, len))) {
-                return false;
-            }
-        }
-        return true;
+        return Arrays.stream(strs)
+                .allMatch(s -> s.substring(0, len).equals(strs[0].substring(0, len)));
     }
 
     //125. 验证回文串
@@ -361,7 +654,12 @@ public class Strings {
 //        System.out.println(obj.reverseWords("the    sky   is   blue"));
 //        System.out.println(obj.longestCommonPrefix(new String[]{"flower", "low", "flight"}));
 //        System.out.println(obj.isPalindrome("ab_a"));
-        System.out.println(obj.removeDuplicateLetters("bcabc"));
+//        System.out.println(obj.removeDuplicateLetters("bcabc"));
+//        System.out.println(obj.removeDuplicateLetters("bcac"));
+//        obj.checkInclusion("adc", "dcda");
+//        obj.minInsertions("(((()(()((())))(((()())))()())))(((()(()()((()()))");
+//        obj.isSubsequence("abc", "cacbhbc");
+        System.out.println(obj.diffWaysToCompute("2*3-4*5"));
 
     }
 }

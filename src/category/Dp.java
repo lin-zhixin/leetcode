@@ -1,9 +1,6 @@
 package category;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Dp {
@@ -23,6 +20,9 @@ public class Dp {
         return stairs[n];
 
     }
+
+
+
 
     //    300. 最长递增子序列
     public int lengthOfLIS(int[] nums) {
@@ -413,13 +413,16 @@ public class Dp {
                     dp[i][j][1] = -prices[i];
                     continue;
                 }
-//                不持有：昨天不持有今天仍然不 or 昨天持有今天卖了 两者的最大
+//                不持有：昨天不持有今天仍然不 or 昨天持有今天卖了（卖了不意味着原来的次数是j+1 因为j是上限 不是次数 卖掉不消耗次数
+//                因为这是意味着原来在不超过上限j的情况下昨天正好是持有股票的状态，然后今天卖掉了最大交易限制还是j 因为卖掉只是一次交易结束和上限没关系）两者的最大
                 dp[i][j][0] = Math.max(dp[i - 1][j][0], dp[i - 1][j][1] + prices[i]);
-//             不持有：昨天持有今天仍然持有 or 昨天不持有今天买了（买了就说明消耗了一次机会 那就意味着昨天最多允许的次数肯定肯定比今天要少一次
-//             因此今天消耗了一次 因为昨天允许的次数不一定要全用完 我看比今天少一次的昨天dp 这样能够保证取到的是昨天的最大值
-//             例如昨天是dp[i - 1][3][0]意思是昨天最多允许的交易次数为3次 但是不意味着截止昨天一定是做了3次交易才是最大值 可能做了一次才是最大值
-//             但对今天来说我是取最大限制为3次的最大值 就是dp[i - 1][3][0]的值） 两者的最大
-                dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i - 1][j - 1][0] - prices[i]);
+//             持有：昨天持有今天仍然持有 or 昨天不持有今天买了（买了就说明必须消耗了一次机会 那就意味着昨天最多允许的次数肯定肯定比今天要少一次
+//             因此今天消耗了一次（买入意味着百分百消耗一次 因此昨天的上限一定是少一次的 因为j代表的是上限，就是必须保证昨天少一次才能保证百分百今天买入之后的上限是j，
+//             举例：如果昨天的上限是j 截止昨天之前的做了交易的次数刚好就是j次 那今天买了一次之后交易上限就是j+1次，如果截止昨天之前做了交易的次数是j-1次那刚好满足条件今天是j次））
+//                因此状态是：
+//                dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i - 1][j - 1][0] - prices[i]);
+//                由于本题j是无限的 因此j-1=j; 所以这边的状态直接就是：
+                dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i - 1][j][0] - prices[i]);
 //                }
             }
         }
@@ -442,6 +445,128 @@ public class Dp {
         return dp[prices.length - 1][0];
 
     }
+    //    122. 买卖股票的最佳时机 II(简化版本)
+//    public int maxProfit2(int[] prices) {
+//        int n = prices.length;
+//        int dpi0 = 0, dpi1 = -999999;
+//        for (int i = 0; i < n; i++) {
+//            int t = dpi0;
+//            dpi0 = Math.max(dpi0, dpi1 + prices[i]);
+//            dpi1 = Math.max(dpi1, t - prices[i]);
+//        }
+//        return dpi0;
+//    }
+
+    //    123. 买卖股票的最佳时机 III
+    public int maxProfit3(int[] prices) {
+        int n = prices.length, i, j;
+        int[][][] dp = new int[n][3][2];
+//        dp[-1][][0]=0;
+//        dp[-1][][1]=-99999;
+//        dp[][0][0]=0;
+//        dp[][0][1]=-99999;
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < 3; j++) {
+                if (j == 0) {
+                    dp[i][j][0] = 0;
+                    dp[i][j][1] = -9999;
+                    continue;
+                }
+                if (i == 0) {
+                    dp[i][j][0] = 0;
+                    dp[i][j][1] = -prices[i];
+                    continue;
+                }
+
+                dp[i][j][0] = Math.max(dp[i - 1][j][0], dp[i - 1][j][1] + prices[i]);
+                dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i - 1][j - 1][0] - prices[i]);
+
+            }
+
+        }
+
+
+        return dp[n - 1][2][0];
+    }
+
+    //188. 买卖股票的最佳时机 IV
+    public int maxProfit(int k, int[] prices) {
+        int n = prices.length;
+        int[][][] dp = new int[n][k + 1][2];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < k + 1; j++) {
+                if (i == 0) {
+                    dp[0][j][0] = 0;
+                    dp[0][j][1] = -prices[i];
+                    continue;
+                }
+                if (j == 0) {
+                    dp[i][0][0] = 0;
+                    dp[i][0][1] = -99999;
+                    continue;
+                }
+                dp[i][j][0] = Math.max(dp[i - 1][j][0], dp[i - 1][j][1] + prices[i]);
+                dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i - 1][j - 1][0] - prices[i]);
+            }
+        }
+        return dp[n - 1][k][0];
+
+    }
+
+//309. 最佳买卖股票时机含冷冻期
+
+    public int maxProfit4(int[] prices) {
+
+        int n = prices.length, k = 1;
+        int[][][] dp = new int[n][k + 1][2];
+        for (int i = 0; i < n; i++) {
+            for (int j = 1; j < k + 1; j++) {
+                if (i == 0) {
+                    dp[0][j][0] = 0;
+                    dp[0][j][1] = -prices[i];
+                    continue;
+                }
+                if (i == 1) {
+                    dp[1][j][0] = Math.max(dp[i - 1][j][0], dp[i - 1][j][1] + prices[i]);
+                    dp[1][j][1] = Math.max(dp[i - 1][j][1], -prices[i]);
+                    continue;
+                }
+//                if (j == 0) {
+//                    dp[i][0][0] = 0;
+//                    dp[i][0][1] = -99999;
+//                    continue;
+//                }
+                dp[i][j][0] = Math.max(dp[i - 1][j][0], dp[i - 1][j][1] + prices[i]);
+                dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i - 2][j][0] - prices[i]);
+            }
+        }
+        System.out.println(dp[n - 1][k][0]);
+        return dp[n - 1][k][0];
+
+
+    }
+
+    //    714. 买卖股票的最佳时机含手续费
+    public int maxProfit5(int[] prices, int fee) {
+
+        int n = prices.length, k = 1;
+        int[][][] dp = new int[n][k + 1][2];
+        for (int i = 0; i < n; i++) {
+            for (int j = 1; j < k + 1; j++) {
+                if (i == 0) {
+                    dp[0][j][0] = 0;
+                    dp[0][j][1] = -prices[i];
+                    continue;
+                }
+                dp[i][j][0] = Math.max(dp[i - 1][j][0], dp[i - 1][j][1] + prices[i] - fee);
+                dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i - 1][j][0] - prices[i]);
+            }
+        }
+        System.out.println(dp[n - 1][k][0]);
+        return dp[n - 1][k][0];
+    }
+
+
 //    剑指 Offer 10- II. 青蛙跳台阶问题
 
 //    public int numWays(int n) {
@@ -539,6 +664,6 @@ public class Dp {
 //        });
 //        dp.partition("aab");
 //        dp.numSquares(12);
-        dp.isMatch("aa","a*");
+        dp.isMatch("aa", "a*");
     }
 }

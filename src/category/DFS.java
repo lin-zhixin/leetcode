@@ -7,6 +7,76 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class DFS {
+    //698. 划分为k个相等的子集
+//    List<List<Integer>> res = new ArrayList<>(20);
+    Map<Integer, Boolean> memo = new HashMap<>();
+
+    public boolean canPartitionKSubsets(int[] nums, int k) {
+        int sum = Arrays.stream(nums).sum();
+        if (sum % k != 0) {
+            return false;
+        }
+        int target = sum / k;
+        return backtrack(k, 0, target, nums, 0, 0);
+    }
+
+    public boolean backtrack(int k, int bucket, int target, int[] nums, int ind, int v) {
+        if (k == 0) {
+            return true;
+        }
+        if (bucket == target) {
+            boolean t = backtrack(k - 1, 0, target, nums, 0, v);
+            memo.put(v, t);
+            return t;
+        }
+        if (memo.containsKey(v)) {
+            return memo.get(v);
+        }
+        for (int i = ind; i < nums.length; i++) {
+            if (((v >> i) & 1) == 1) {
+                continue;
+            }
+            if (bucket + nums[i] > target) {
+                continue;
+            }
+
+            v |= (1 << i);
+            bucket += nums[i];
+            if (backtrack(k, bucket, target, nums, i + 1, v)) {
+                return true;
+            }
+            bucket -= nums[i];
+            v ^= (1 << i);
+        }
+        return false;
+    }
+
+
+    //    22. 括号生成
+    public List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        generateParenthesis(n, 0, 0, new StringBuilder(), res);
+        return res;
+    }
+
+    public void generateParenthesis(int n, int l, int r, StringBuilder sb, List<String> res) {
+        if (sb.length() == 2 * n) {
+            res.add(sb.toString());
+            return;
+        }
+        //            如果左括号的个数小于总数的一半就继续塞进去
+        if (l < n) {
+            sb.append('(');
+            generateParenthesis(n, l + 1, r, sb, res);
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        //            如果右括号的数量小于左边的就开始赛右括号
+        if (r < l) {
+            sb.append(')');
+            generateParenthesis(n, l, r + 1, sb, res);
+            sb.deleteCharAt(sb.length() - 1);
+        }
+    }
 
     //    51. N 皇后 回溯
     public List<List<String>> solveNQueens(int n) {
@@ -406,6 +476,7 @@ public class DFS {
     public static void main(String[] args) {
         DFS o = new DFS();
 //        o.solveNQueens(4);
+        System.out.println(o.generateParenthesis(3));
 
         char[][] c = new char[3][4];
         c[0] = new char[]{'A', 'B', 'C', 'E'};
@@ -413,23 +484,24 @@ public class DFS {
         c[2] = new char[]{'A', 'D', 'E', 'E'};
 
 
-//        System.out.println(o.exist(c, "SEE"));
+        System.out.println(o.combinationSum3(3, 7));
         int[] nums = new int[]{2, 3, 6, 7};
 //        o.combinationSum(nums, 7);
 
         int[][] grid = new int[10][10];
-        grid[0] = new int[]{0, 0, 1, 1, 0, 1, 0, 0, 1, 0};
-        grid[1] = new int[]{1, 1, 0, 1, 1, 0, 1, 1, 1, 0};
-        grid[2] = new int[]{1, 0, 1, 1, 1, 0, 0, 1, 1, 0};
-        grid[3] = new int[]{0, 1, 1, 0, 0, 0, 0, 1, 0, 1};
-        grid[4] = new int[]{0, 0, 0, 0, 0, 0, 1, 1, 1, 0};
-        grid[5] = new int[]{0, 1, 0, 1, 0, 1, 0, 1, 1, 1};
-        grid[6] = new int[]{1, 0, 1, 0, 1, 1, 0, 0, 0, 1};
-        grid[7] = new int[]{1, 1, 1, 1, 1, 1, 0, 0, 0, 0};
-        grid[8] = new int[]{1, 1, 1, 0, 0, 1, 0, 1, 0, 1};
-        grid[9] = new int[]{1, 1, 1, 0, 1, 1, 0, 1, 1, 0};
+        grid[0] = new int[]{1, 1, 0, 1, 1, 1, 1, 1, 1, 1};
+        grid[1] = new int[]{0, 0, 1, 0, 0, 1, 0, 1, 1, 1};
+        grid[2] = new int[]{1, 0, 1, 0, 0, 0, 1, 0, 1, 0};
+        grid[3] = new int[]{1, 1, 1, 1, 1, 0, 0, 1, 0, 0};
+        grid[4] = new int[]{1, 0, 1, 0, 1, 1, 1, 1, 1, 0};
+        grid[5] = new int[]{0, 0, 0, 0, 1, 1, 0, 0, 0, 0};
+        grid[6] = new int[]{1, 0, 1, 0, 0, 0, 0, 1, 1, 0};
+        grid[7] = new int[]{1, 1, 0, 0, 1, 1, 0, 0, 0, 0};
+        grid[8] = new int[]{0, 0, 0, 1, 1, 0, 1, 1, 1, 0};
+        grid[9] = new int[]{1, 1, 0, 1, 0, 1, 0, 0, 1, 0};
 
-        o.closedIsland(grid);
+//        o.closedIsland(grid);
+//        o.canPartitionKSubsets(new int[]{4, 3, 2, 3, 5, 2, 1}, 4);
     }
 
 
