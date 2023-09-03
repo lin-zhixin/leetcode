@@ -5,12 +5,42 @@ package category;
 import javafx.util.Pair;
 
 import java.util.*;
+import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 //import org.apache.commons.collections.CollectionUtils;
 
 public class Numbers {
+    //1. 两数之和
+    public int[] twoSum(int[] nums, int target) {
+        List<Pair<Integer, Integer>> numbers = new ArrayList<>();
+        for (int i = 0; i < nums.length; i++) {
+            numbers.add(new Pair<>(nums[i], i));
+        }
+        numbers.sort(((o1, o2) -> o1.getKey() - o2.getKey()));
+        int n = numbers.size();
+        int l = 0, r = n - 1;
+        List<Integer> res = new ArrayList<>();
+        while (l < r) {
+            int left = numbers.get(l).getKey(), right = numbers.get(r).getKey();
+            int sum = left + right;
+            if (sum == target) {
+                res.add(numbers.get(l).getValue());
+                res.add(numbers.get(r).getValue());
+                while (l < r && numbers.get(l).getKey() == left) l++;
+                while (l < r && numbers.get(r).getKey() == right) r--;
+            } else if (sum < target) {
+                while (l < r && numbers.get(l).getKey() == left) l++;
+            } else if (sum > target) {
+                while (l < r && numbers.get(r).getKey() == right) r--;
+            }
+        }
+        System.out.println(res);
+        return res.stream().mapToInt(Integer::intValue).toArray();
+    }
+
     //    合并区间
     public int[][] merge(int[][] intervals) {
         Arrays.sort(intervals, (a, b) -> a[0] - b[0]);
@@ -73,6 +103,8 @@ public class Numbers {
 
     //    面試題：topk问题 215. 数组中的第K个最大元素
     public int findKthLargest3(int[] nums, int k) {
+//        LockSupport.park();
+//        ReentrantLock
         return qsortSelect(nums, 0, nums.length - 1, nums.length - k);
     }
 
@@ -1890,9 +1922,10 @@ public class Numbers {
 //        numbers.topKFrequent(new int[]{1, 1, 1, 2, 2, 3}, 2);
 //        numbers.sortColors(new int[]{2, 0, 1});
 //        numbers.findMid(new int[]{1, 3}, new int[]{2, 4});
-        int[] nums1 = new int[]{1};
+        int[] nums1 = new int[]{3, 2, 3};
         int[] nums2 = new int[]{3, 2, 1, 5, 6, 4};
-        System.out.println(numbers.findKthLargest3(nums1, 1));
+        System.out.println(numbers.twoSum(nums1, 6));
+//        System.out.println(numbers.findKthLargest3(nums1, 1));
 //        System.out.println(numbers.multiply("0", "0"));
 //        System.out.println(numbers.findMin3(nums1));
 //        System.out.println(numbers.removeElement(nums1, 3));

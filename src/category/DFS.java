@@ -262,6 +262,36 @@ public class DFS {
         }
     }
 
+    //    40. 组合总和II
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        Arrays.sort(candidates);
+        List<List<Integer>> res = new ArrayList<>();
+        combinationSum2(candidates, 0, target, new LinkedList<>(), res);
+        System.out.println(res);
+
+        return res;
+    }
+
+    public void combinationSum2(int[] candidates, int s, int target, Deque<Integer> q, List<List<Integer>> res) {
+        int sum = q.stream().mapToInt(Integer::intValue).sum();
+        if (sum == target) {
+            res.add(new ArrayList<>(q));
+            return;
+        }
+        if (sum>target){
+            return;
+        }
+        int n = candidates.length;
+        for (int i = s; i < n; i++) {
+            if (i>s&&candidates[i]==candidates[i-1]){
+                continue;
+            }
+            q.offerLast(candidates[i]);
+            combinationSum2(candidates, i + 1, target, q, res);
+            q.pollLast();
+        }
+    }
+
     //216. 组合总和 III
     public List<List<Integer>> combinationSum3(int k, int n) {
         List<List<Integer>> res = new ArrayList<>();

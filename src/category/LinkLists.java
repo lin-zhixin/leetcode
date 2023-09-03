@@ -22,6 +22,30 @@ class ListNode {
 }
 
 public class LinkLists {
+
+    public ListNode detectCycle(ListNode head) {
+        ListNode fast = head, slow = head;
+        while (fast != null) {
+            slow = slow.next;
+            if (fast.next == null || fast.next.next == null) {
+                return null;
+            }
+            fast = fast.next.next;
+//            数学相关 具体看官方解析
+            if (fast == slow) {
+                ListNode t = head;
+                while (t != slow) {
+                    slow = slow.next;
+                    t = t.next;
+                }
+                return t;
+            }
+//            System.out.println(memo);
+        }
+        return null;
+    }
+
+    //    2023.9.3之前：
     //    //    链表相关：
 ////    86. 分隔链表
 //    public ListNode partition(ListNode head, int x) {
@@ -174,14 +198,13 @@ public class LinkLists {
             for (int i = 0; i < k && fast != null; i++) {
                 fast = fast.next;
             }
-            reverse(slow,fast);
-            slow=fast;
+            reverse(slow, fast);
+            slow = fast;
 
         }
         dis(head);
         return head;
     }
-
 
 
     //
@@ -442,7 +465,7 @@ public class LinkLists {
         List<Integer> integers = new ArrayList<>();
 
 //        int[] ids = new int[]{1,2,3,4,5};
-        int[] ids = new int[]{1,2,3,4,5};
+        int[] ids = new int[]{1, 2, 3, 4, 5};
         ListNode dummyNode = new ListNode(-1);
         ListNode p = dummyNode;
         for (int e : ids) {
