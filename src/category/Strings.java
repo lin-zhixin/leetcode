@@ -6,6 +6,44 @@ import java.util.*;
 
 // 字符串处理
 public class Strings {
+    //    394. 字符串解码
+    public String decodeString(String s) {
+        Deque<Character> stack = new LinkedList<>();
+        int n = s.length();
+//        boolean
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if (c != ']') {
+                stack.offerLast(c);
+            } else {
+                StringBuilder t = new StringBuilder(), tres = new StringBuilder(), numsb = new StringBuilder();
+                while (!stack.isEmpty() && stack.peekLast() != '[') {
+                    t.append(stack.pollLast());
+                }
+                stack.pollLast();
+                t.reverse();
+                while (!stack.isEmpty() && Character.isDigit(stack.peekLast())) {
+                    numsb.append(stack.pollLast());
+                }
+                numsb.reverse();
+                int num = Integer.parseInt(numsb.toString());
+                while ((num = num - 1) >= 0) {
+                    tres.append(t);
+                }
+                for (int j = 0; j < tres.length(); j++) {
+                    stack.offerLast(tres.charAt(j));
+                }
+            }
+        }
+        stack.forEach(res::append);
+//        System.out.println(res);
+        return res.toString();
+
+    }
+
+
+    //    ----------------------------2023.9.21之前：
     //    392. 判断子序列 二分查找
     public boolean isSubsequence(String s, String t) {
         Map<Character, List<Integer>> map = new HashMap<>();
@@ -348,7 +386,6 @@ public class Strings {
         for (int i = 0, k = 0; i < haystack.length(); i++) {
             while (k > 0 && haystack.charAt(i) != needle.charAt(k)) {
                 k = next[k - 1];
-
             }
             if (haystack.charAt(i) == needle.charAt(k)) {
                 k++;
@@ -362,14 +399,21 @@ public class Strings {
     }
 
     public int[] getNext(String p) {
-        int n = p.length(), k = 0;
-        int[] next = new int[n];//存放的是长度 不是下标 只是在下面的while里面当做下标来用
+        int n = p.length();
+        //next数组里面存放的是最大前后缀的下一位位置
+//        其求值过程就是（比如next[i]）：i位置与[0~i-1]的最大前后缀的下一位（其实就是next[i-1]）比较是否相等,
+//        如果相等那就说明[0~i]这个字符串的最大前后缀可以加一位了，比如abckdjsabck ,
+//        在比较最后一位k的时候去找到abckdjsabc的最大前后缀（是abc）的下一位进行比较，如果相等那就说明整个字符串的最大前后缀可以加1了，
+//        也就是整个字符串的最大前后缀变成abck，如果不相等就再查找abc的最大前后缀的下一位作比较，以此类推。直到最终比较到第0位还不相等那就是0
+        int[] next = new int[n];
         next[0] = 0;
+        int k = next[0];
         for (int i = 1; i < n; i++) {
-//            k就是上一个的next 就是next[i-1]
+//            每次循环开始 k就是上一个的next 就是next[i-1]：前面子串的最大前后缀的下一位字符p[]
             while (k > 0 && p.charAt(i) != p.charAt(k)) {
-                k = next[k - 1];//减一是因为这边k做下标用，和长度差1
+                k = next[k - 1];//减一是因为这边k做下标用，和最大前后缀的下一个位置差1
             }
+//            如果i位置等于k位置说明能够跳到k位置的下一位，增加一个最大前后缀的长度 所以k+1之后作为next[i] ;
             if (p.charAt(i) == p.charAt(k)) {
                 k++;//减一是因为这边k做下标用，和长度差1
             }
@@ -659,7 +703,8 @@ public class Strings {
 //        obj.checkInclusion("adc", "dcda");
 //        obj.minInsertions("(((()(()((())))(((()())))()())))(((()(()()((()()))");
 //        obj.isSubsequence("abc", "cacbhbc");
-        System.out.println(obj.diffWaysToCompute("2*3-4*5"));
+//        System.out.println(obj.diffWaysToCompute("2*3-4*5"));
+        System.out.println(obj.decodeString("abc3[cd]xyz"));
 
     }
 }

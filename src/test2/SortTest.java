@@ -279,7 +279,7 @@ public class SortTest {
 
         int[] list = new int[]{5, 3, 4, 1, 2, 89, 54, 2};
         SortTest sortTest = new SortTest();
-        sortTest.mergsort(list,0, list.length-1);
+        sortTest.mergsort(list, 0, list.length - 1);
 //        sortTest.insertSort(new int[]{5, 3, 4, 1, 2, -89, 54, -2});
 //        sortTest.bobbleSort(new int[]{5, 3, 4, 1, 2, -89, 54, -2});
 //        System.out.println(Arrays.toString(sortTest.quickNor(new int[]{5, 3, 4, 1, 2, -89, 54, 5}, 0, list.length - 1)));

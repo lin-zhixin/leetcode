@@ -8,6 +8,24 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Dp {
+    public int translateNum(int num) {
+        char[] nums = String.valueOf(num).toCharArray();
+        int n = nums.length;
+        if (n == 0) {
+            return 0;
+        }
+        int[] dp = new int[n];
+        dp[0] = 1;
+        if (n == 1) {
+            return dp[0];
+        }
+        dp[1] = (nums[0] - '0') * 10 + (nums[1] - '0') < 26 ? 2 : 1;
+        for (int i = 2; i < n; i++) {
+            dp[i] = dp[i - 1] + ((nums[i - 1] - '0') > 0 && (nums[i - 1] - '0') * 10 + (nums[i] - '0') < 26 ? dp[i - 2] : 0);
+        }
+        return dp[n - 1];
+    }
+
     //    //70. 爬楼梯
     public int climbStairs(int n) {
         int[] res = new int[n + 1];
@@ -1177,7 +1195,7 @@ public class Dp {
         wordDict.add("pine");
         wordDict.add("pineapple");
         Dp dp = new Dp();
-        System.out.println(dp.maxProfit2(nums));
+        System.out.println(dp.translateNum(506));
 //        System.out.println(dp.numDecodings2("2611055971756562"));
 //        System.out.println(dp.partition("aab"));
 //        System.out.println(dp.findTargetSumWays2(nums, 3));

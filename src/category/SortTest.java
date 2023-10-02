@@ -137,7 +137,6 @@ public class SortTest {
     }
 
 
-
     //    912. 排序数组 快排
     public int[] sortArray(int[] nums) {
         qsort(nums);
@@ -211,6 +210,7 @@ public class SortTest {
         }
         return ind;
     }
+
     //56. 合并区间
     public int[][] merge(int[][] intervals) {
 
@@ -342,8 +342,6 @@ public class SortTest {
 
         return res.toArray(new int[res.size()][]);
     }
-
-
 
 
     public static void main(String[] args) {

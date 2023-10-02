@@ -14,6 +14,125 @@ import java.util.stream.Stream;
 //import org.apache.commons.collections.CollectionUtils;
 
 public class Numbers {
+    public int hammingWeight(long n) {
+        int res = 0;
+        while (n != 0) {
+            n &= (n - 1);
+            res++;
+        }
+        return res;
+
+    }
+
+    //    22. 括号生成
+    public List<String> generateParenthesis(int n) {
+        List<String> res = new ArrayList<>();
+        generateParenthesis(n, n, new Stack<>(), res);
+        return res;
+    }
+
+    public void generateParenthesis(int l, int r, Stack<Character> stack, List<String> res) {
+//        if (l < 0 || r < 0 || l > r) {
+//            return;
+//        }
+        if (l == 0 && r == 0) {
+            StringBuilder sb = new StringBuilder();
+            stack.forEach(sb::append);
+            res.add(sb.toString());
+            return;
+        }
+
+        if (l > 0) {
+            stack.push('(');
+            generateParenthesis(l - 1, r, stack, res);
+            stack.pop();
+        }
+        if (r > l) {
+            stack.push(')');
+            generateParenthesis(l, r - 1, stack, res);
+            stack.pop();
+        }
+
+    }
+
+    //28. 实现 strStr()
+    public int strStr(String haystack, String needle) {
+        int[] next = getnext(needle);
+        int prenext = next[0];
+        for (int i = 0; i < haystack.length(); i++) {
+            while (prenext > 0 && haystack.charAt(i) != needle.charAt(prenext)) {
+                prenext = next[prenext - 1];
+            }
+            if (haystack.charAt(i) == needle.charAt(prenext)) {
+                prenext++;
+            }
+            if (prenext == next.length) {
+                return i - next.length + 1;
+            }
+        }
+        return -1;
+    }
+
+    public int[] getnext(String p) {
+        int n = p.length();
+        int[] next = new int[n];
+        int prenext = next[0];
+        for (int i = 1; i < n; i++) {
+            while (prenext > 0 && p.charAt(i) != p.charAt(prenext)) {
+                prenext = next[prenext - 1];
+            }
+            next[i] = p.charAt(i) == p.charAt(prenext) ? prenext = prenext + 1 : prenext;
+        }
+        return next;
+    }
+
+    //    1. 两数之和
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+        for (int i = 0; i < nums.length; i++) {
+            map.putIfAbsent(nums[i], i);
+        }
+        Arrays.sort(nums);
+        int l = 0, r = nums.length - 1;
+        while (l < r) {
+            if (nums[l] + nums[r] == target) {
+                return new int[]{map.get(nums[l]), map.get(nums[r])};
+            } else if (nums[l] + nums[r] < target) {
+                l++;
+            } else {
+                r--;
+            }
+        }
+        return new int[]{0, 0};
+    }
+
+    //    53. 最大子数组和
+    public int maxSubArray(int[] nums) {
+        int n = nums.length, l = 0, r = 0, res = nums[0];
+        int[] dp = new int[n];
+        for (int i = 1; i < n; i++) {
+//            nums[i] = Math.max(nums[i - 1] + nums[i], nums[i]);
+            if (nums[i - 1] + nums[i] > nums[i]) {
+                nums[i] = nums[i - 1] + nums[i];
+                if (nums[i] > res) {
+                    res = nums[i];
+                    r = i;
+                }
+            } else {
+                if (nums[i] > res) {
+                    res = nums[i];
+                }
+                l = r = i;
+            }
+        }
+//        int res = Arrays.stream(nums).max().getAsInt();
+        System.out.println(l + "," + r);
+        return res;
+
+    }
+
+//-----------2023.9.21之前：
+
     //    3. 无重复字符的最长子串
     public int lengthOfLongestSubstring(String s) {
         Map<Character, Integer> win = new HashMap<>();
@@ -158,7 +277,7 @@ public class Numbers {
     public static void main(String[] args) {
         Numbers nu = new Numbers();
 //        System.out.println(nu.findAnagrams("vwwvv", "vwv"));
-        System.out.println(nu.minWindow("ADOBECODEBANC", "ABC"));
+        System.out.println(nu.hammingWeight(42949672933L));
 
     }
 }

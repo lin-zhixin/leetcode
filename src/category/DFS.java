@@ -6,7 +6,66 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.*;
+
 public class DFS {
+
+    //    字节面试题
+//    字节面试题，求大佬们看看，数组A中给定可以使用的1~9的数，返回由A数组中的元素组成的小于n的最大数。
+//    例如A={1, 2, 4, 9}，x=2533，返回2499
+//    作者：Damon
+//    链接：https://leetcode.cn/circle/discuss/fbhhev/
+//    来源：力扣（LeetCode）
+//    著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+    public void maxLessN(int[] list, int n) {
+//        int[] nums=new int[]{List};
+//        Arrays.stream(list).sorted((o1, o2) ->1)
+        int[] nums = Arrays.stream(list).boxed().sorted(Comparator.reverseOrder()).mapToInt(Integer::intValue).toArray();
+        MyUtile.dis(nums);
+        String ns = n + "";
+        System.out.println(maxLessN(nums, ns, 0, ns.length(), new StringBuilder()));
+    }
+
+    public StringBuilder maxLessN(int[] nums, String n, int ind, int len, StringBuilder res) {
+        if (ind == len) {
+            return res;
+        }
+        int target = n.charAt(ind) - '0';
+        int cur = maxLessNNum(nums, target);
+        if (cur==-1){
+//            如果不存在小于当前值的最大值，就直接返回小一位数是所有最大值
+            int tl = len - 1;
+            res=new StringBuilder();
+            while ((tl = tl - 1) >= 0) {
+                res.append(nums[0]);
+            }
+            return res;
+        }
+        if (cur < target) {
+            res.append(cur);
+            int next = maxLessNNum(nums, 10);
+            int tl = len - ind;
+            while ((tl = tl - 1) > 0) {
+                res.append(next);
+            }
+            return res;
+        } else if (cur == target) {
+            res.append(cur);
+            return maxLessN(nums, n, ind + 1, len, res);
+        }
+        return new StringBuilder();
+    }
+
+    public int maxLessNNum(int[] list, int n) {
+        for (int i = 0; i < list.length; i++) {
+            if (list[i] <= n) {
+                return list[i];
+            }
+        }
+        return -1;
+    }
+
+
     //698. 划分为k个相等的子集
 //    List<List<Integer>> res = new ArrayList<>(20);
     Map<Integer, Boolean> memo = new HashMap<>();
@@ -278,12 +337,12 @@ public class DFS {
             res.add(new ArrayList<>(q));
             return;
         }
-        if (sum>target){
+        if (sum > target) {
             return;
         }
         int n = candidates.length;
         for (int i = s; i < n; i++) {
-            if (i>s&&candidates[i]==candidates[i-1]){
+            if (i > s && candidates[i] == candidates[i - 1]) {
                 continue;
             }
             q.offerLast(candidates[i]);
@@ -506,7 +565,7 @@ public class DFS {
     public static void main(String[] args) {
         DFS o = new DFS();
 //        o.solveNQueens(4);
-        System.out.println(o.generateParenthesis(3));
+//        System.out.println(o.generateParenthesis(3));
 
         char[][] c = new char[3][4];
         c[0] = new char[]{'A', 'B', 'C', 'E'};
@@ -514,8 +573,8 @@ public class DFS {
         c[2] = new char[]{'A', 'D', 'E', 'E'};
 
 
-        System.out.println(o.combinationSum3(3, 7));
-        int[] nums = new int[]{2, 3, 6, 7};
+//        System.out.println(o.combinationSum3(3, 7));
+        int[] nums = new int[]{1, 2, 4, 9};
 //        o.combinationSum(nums, 7);
 
         int[][] grid = new int[10][10];
@@ -529,7 +588,7 @@ public class DFS {
         grid[7] = new int[]{1, 1, 0, 0, 1, 1, 0, 0, 0, 0};
         grid[8] = new int[]{0, 0, 0, 1, 1, 0, 1, 1, 1, 0};
         grid[9] = new int[]{1, 1, 0, 1, 0, 1, 0, 0, 1, 0};
-
+        o.maxLessN(nums,2033);
 //        o.closedIsland(grid);
 //        o.canPartitionKSubsets(new int[]{4, 3, 2, 3, 5, 2, 1}, 4);
     }

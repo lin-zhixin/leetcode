@@ -13,6 +13,110 @@ import java.util.stream.Stream;
 //import org.apache.commons.collections.CollectionUtils;
 
 public class Numbers {
+
+
+    //8. 字符串转换整数 (atoi)
+    public int myAtoi(String s) {
+        s = s.trim();
+        if (s.length() == 0) {
+            return 0;
+        }
+
+        long res = 0;
+        int i = 0, n = s.length();
+        int sign = 1;
+        if (s.charAt(i) == '-') {
+            sign = -1;
+            i++;
+        } else if (s.charAt(i) == '+') {
+            i++;
+        }
+        while (i < n && s.charAt(i) >= '0' && s.charAt(i) <= '9') {
+            res = res * 10 + s.charAt(i) - '0';
+            if (res > Integer.MAX_VALUE) {
+                return sign == 1 ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+            }
+            i++;
+        }
+        return (int) res * sign;
+
+    }
+
+    public int myAtoi2(String str) {
+//        别人的笔记
+        int n = str.length();
+        int i = 0;
+        // 记录正负号
+        int sign = 1;
+        // 用 long 避免 int 溢出
+        long res = 0;
+        // 跳过前导空格
+        while (i < n && str.charAt(i) == ' ') {
+            i++;
+        }
+        if (i == n) {
+            return 0;
+        }
+
+        // 记录符号位
+        if (str.charAt(i) == '-') {
+            sign = -1;
+            i++;
+        } else if (str.charAt(i) == '+') {
+            i++;
+        }
+        if (i == n) {
+            return 0;
+        }
+
+        // 统计数字位
+        while (i < n && '0' <= str.charAt(i) && str.charAt(i) <= '9') {
+            res = res * 10 + str.charAt(i) - '0';
+            if (res > Integer.MAX_VALUE) {
+                break;
+            }
+            i++;
+        }
+        // 如果溢出，强转成 int 就会和真实值不同
+        if ((int) res != res) {
+            return sign == 1 ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+        }
+        return (int) res * sign;
+    }
+
+
+//    soul面试：233. 数字 1 的个数
+
+    public int countDigitOne(int n) {
+        //        枚举每一位可能出现1的个数，左边个数+右边个数，左边就是左边的大小，右边就是根据右边的数字大小决定，如果数字在1xxx~199...之间就是r-1xxx+1,小于1xxx就是0，大于199...就是1xx个
+        int len = (n + "").length();
+        //        System.out.println(len);
+        int res = 0;
+
+        for (int i = 0; i < len; i++) {
+            int l = n / myPow(10, i + 1);
+            int r = n % myPow(10, i + 1);
+            int lsum = l * myPow(10, i);
+            int rsum = Math.min(myPow(10, i), Math.max(0, r - myPow(10, i) + 1));
+            res += (lsum + rsum);
+        }
+        return res;
+    }
+
+    public int myPow(int n, int k) {
+        int res = 1;
+        while (k > 0) {
+            int t = (k % 2);
+            if (t == 1) {
+                res *= n;
+            }
+            n *= n;
+            k /= 2;
+        }
+        //        System.out.println(res);
+        return res;
+    }
+
     //1. 两数之和
     public int[] twoSum(int[] nums, int target) {
         List<Pair<Integer, Integer>> numbers = new ArrayList<>();
@@ -1924,7 +2028,9 @@ public class Numbers {
 //        numbers.findMid(new int[]{1, 3}, new int[]{2, 4});
         int[] nums1 = new int[]{3, 2, 3};
         int[] nums2 = new int[]{3, 2, 1, 5, 6, 4};
-        System.out.println(numbers.twoSum(nums1, 6));
+//        numbers.myPow(2, 10);
+        System.out.println(numbers.myAtoi("  -42"));
+//        System.out.println(numbers.twoSum(nums1, 6));
 //        System.out.println(numbers.findKthLargest3(nums1, 1));
 //        System.out.println(numbers.multiply("0", "0"));
 //        System.out.println(numbers.findMin3(nums1));

@@ -43,7 +43,61 @@ class TreeNode {
     }
 }
 
+class TrieNode {
+    //    前缀树：实际是一颗多叉树，树枝为一个字符，节点值为当前这个路径删是否有单词，使用end表示
+    TrieNode[] children = new TrieNode[26];
+    boolean end;
+
+    public TrieNode() {
+    }
+
+    public TrieNode(TrieNode[] children, boolean end) {
+        this.children = children;
+        this.end = end;
+    }
+}
+
+
 public class Tree {
+    //101. 对称二叉树
+    public boolean isSymmetric(TreeNode root) {
+        Deque<TreeNode> q = new LinkedList<>();
+        Deque<Integer> q2 = new LinkedList<>();
+        q.offerLast(root);
+        q2.offerLast(root.val);
+        while (!q.isEmpty()) {
+            TreeNode t = q.poll();
+            if (t.left == null) {
+                q2.offerLast(-1);
+            } else {
+                q2.offer(t.left.val);
+                q.offerLast(t.left);
+            }
+            if (t.right == null) {
+                q2.offerLast(-1);
+            } else {
+                q2.offer(t.right.val);
+                q.offerLast(t.right);
+            }
+        }
+        System.out.println(q2);
+
+        Stack<Integer> stack = new Stack<>();
+        while (!q2.isEmpty()) {
+            Integer num = q2.pop();
+            if (!stack.isEmpty() && Objects.equals(stack.peek(), num)) {
+                stack.pop();
+            } else {
+                stack.push(num);
+            }
+        }
+        return stack.size() == 1;
+
+
+    }
+
+//    -------2023.9.21：
+
     //112. 路径总和
     public boolean hasPathSum(TreeNode root, int targetSum) {
         if (root == null) {
@@ -175,26 +229,26 @@ public class Tree {
     }
 
     //101. 对称二叉树
-    public boolean isSymmetric(TreeNode root) {
-        Queue<TreeNode> queue = new LinkedList<>();
-        queue.offer(root);
-        queue.offer(root);
-        while (!queue.isEmpty()) {
-            TreeNode u = queue.poll();
-            TreeNode v = queue.poll();
-            if (Objects.isNull(u) && Objects.isNull(v)) {
-                continue;
-            }
-            if ((Objects.isNull(u) || Objects.isNull(v)) || !Objects.equals(u.val, v.val)) {
-                return false;
-            }
-            queue.offer(u.left);
-            queue.offer(v.right);
-            queue.offer(u.right);
-            queue.offer(v.left);
-        }
-        return true;
-    }
+//    public boolean isSymmetric(TreeNode root) {
+//        Queue<TreeNode> queue = new LinkedList<>();
+//        queue.offer(root);
+//        queue.offer(root);
+//        while (!queue.isEmpty()) {
+//            TreeNode u = queue.poll();
+//            TreeNode v = queue.poll();
+//            if (Objects.isNull(u) && Objects.isNull(v)) {
+//                continue;
+//            }
+//            if ((Objects.isNull(u) || Objects.isNull(v)) || !Objects.equals(u.val, v.val)) {
+//                return false;
+//            }
+//            queue.offer(u.left);
+//            queue.offer(v.right);
+//            queue.offer(u.right);
+//            queue.offer(v.left);
+//        }
+//        return true;
+//    }
 
     public void inorderTraversalDG(TreeNode root, List<Integer> res) {
         if (Objects.nonNull(root)) {
@@ -937,4 +991,95 @@ public class Tree {
 //        System.out.println(o.openLock(new String[]{"8887","8889","8878","8898","8788","8988","7888","9888"}, "8888"));
     }
 
+}
+
+//LCR 062. 实现 Trie (前缀树)
+class Trie {
+    TrieNode root;
+
+    /**
+     * Initialize your data structure here.
+     */
+    public Trie() {
+        root = new TrieNode();
+    }
+
+    /**
+     * Inserts a word into the trie.
+     */
+    public void insert(String word) {
+        TrieNode p = root;
+        for (int i = 0; i < word.length(); i++) {
+            p = (p.children[word.charAt(i) - 'a'] = p.children[word.charAt(i) - 'a'] == null ? new TrieNode() : p.children[word.charAt(i) - 'a']);
+        }
+        p.end = true;
+    }
+
+    /**
+     * Returns if the word is in the trie.
+     */
+    public boolean search(String word) {
+        TrieNode p = root;
+        for (int i = 0; i < word.length(); i++) {
+            if (p == null || (p = (p.children[word.charAt(i) - 'a'])) == null) {
+                return false;
+            }
+        }
+        return p.end;
+    }
+
+    /**
+     * Returns if there is any word in the trie that starts with the given prefix.
+     */
+    public boolean startsWith(String prefix) {
+        TrieNode p = root;
+        for (int i = 0; i < prefix.length(); i++) {
+            if ((p = (p.children[prefix.charAt(i) - 'a'])) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+}
+
+//211. 添加与搜索单词 - 数据结构设计
+class WordDictionary {
+    TrieNode root;
+
+    public WordDictionary() {
+        root = new TrieNode();
+    }
+
+    public void addWord(String word) {
+        TrieNode p = root;
+        for (int i = 0; i < word.length(); i++) {
+            p = (p.children[word.charAt(i) - 'a'] = p.children[word.charAt(i) - 'a'] == null ? new TrieNode() : p.children[word.charAt(i) - 'a']);
+        }
+        p.end = true;
+    }
+
+    public boolean search(String word) {
+        TrieNode p = root;
+        return search(word, p);
+    }
+
+    public boolean search(String word, TrieNode root) {
+        TrieNode p = root;
+        if (p == null) {
+            return false;
+        }
+        for (int i = 0; i < word.length(); i++) {
+            if (p == null) {
+                return false;
+            }
+            if (word.charAt(i) == '.') {
+                int finalI = i;
+                return Arrays.stream(p.children).anyMatch(cj -> cj != null && search(word.substring(finalI + 1), cj));
+            } else {
+                p = (p.children[word.charAt(i) - 'a']);
+            }
+        }
+        return p != null && p.end;
+    }
 }

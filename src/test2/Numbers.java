@@ -11,15 +11,16 @@ public class Numbers {
     public static void main(String[] args) {
         Numbers numbers = new Numbers();
 //        System.out.println(numbers.mySqrt(1));
-        int[] nums = new int[]{2, 1, 3};
+        int[] nums = new int[]{3, 4, -1, 1};
         int[] nums2 = new int[]{2, 3, 1};
 //        System.out.println(numbers.searchRange(new int[]{1}, 1)[0] + "," + numbers.searchRange(new int[]{1}, 1)[1]);
 //        System.out.println(numbers.findDisappearedNumbers(nums));
 //        numbers.nextPermutation(nums);
 //        numbers.lastRemaining(5, 3);
 //        numbers.setZeroes(new int[][]{{0,1,2,0},{3,4,5,2},{1,3,1,5}});
-        numbers.setZeroes(new int[][]{{1,0}});
+//        numbers.setZeroes(new int[][]{{1, 0}});
 //        numbers.findContinuousSequence(15);
+        System.out.println(numbers.firstMissingPositive(nums));
 
     }
 
@@ -825,11 +826,11 @@ public class Numbers {
 //    //73. 矩阵置零
     public void setZeroes(int[][] matrix) {
         int m = matrix.length, n = matrix[0].length;
-        boolean row0= Arrays.stream(matrix[0]).anyMatch(e->e==0);
-        boolean col0=false;
+        boolean row0 = Arrays.stream(matrix[0]).anyMatch(e -> e == 0);
+        boolean col0 = false;
         for (int i = 0; i < m; i++) {
-            if (matrix[i][0]==0){
-                col0=true;
+            if (matrix[i][0] == 0) {
+                col0 = true;
                 break;
             }
         }
@@ -855,13 +856,13 @@ public class Numbers {
                 }
             }
         }
-        if (row0){
-            Arrays.fill(matrix[0],0);
+        if (row0) {
+            Arrays.fill(matrix[0], 0);
 
         }
-        if (col0){
+        if (col0) {
             for (int i = 0; i < m; i++) {
-                matrix[i][0]=0;
+                matrix[i][0] = 0;
             }
         }
         MyUtile.disMap(matrix);
@@ -1300,16 +1301,17 @@ public class Numbers {
     public int firstMissingPositive(int[] nums) {
         int n = nums.length;
         for (int i = 0; i < n; i++) {
-            nums[i] = nums[i] <= 0 ? 9999 : nums[i];
-        }
-        for (int i = 0; i < n; i++) {
-            int ti = Math.abs(nums[i]);
-            if (ti - 1 >= 0 && ti - 1 < n) {
-                nums[ti - 1] = -Math.abs(nums[ti - 1]);
+            if (nums[i] <= 0) {
+                nums[i] = n + 1;
             }
         }
-        int i;
-        for (i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
+            int ind = Math.abs(nums[i]) - 1;
+            if (ind < n && nums[ind] > 0) {
+                nums[ind] = -nums[ind];
+            }
+        }
+        for (int i = 0; i < n; i++) {
             if (nums[i] > 0) {
                 return i + 1;
             }
@@ -1426,6 +1428,12 @@ public class Numbers {
         Collections.reverse(res);
         return res.stream().mapToInt(Integer::intValue).toArray();
     }
+
+//    public static void main(String[] args) {
+//        Numbers numbers = new Numbers();
+//        int[] nums = new int[]{1, 2, 0};
+//
+//    }
 
 
 }

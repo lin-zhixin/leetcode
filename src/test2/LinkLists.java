@@ -163,7 +163,7 @@ public class LinkLists {
                 slow = slow.next;
             }
         }
-//        dis(res);
+        dis(res);
         return res.next;
     }
 
