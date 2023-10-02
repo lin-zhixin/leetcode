@@ -1,5 +1,7 @@
 package category;
 
+import javafx.util.Pair;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -678,7 +680,7 @@ public class HardTest {
 
     //912. 排序数组
     public int[] sortArray(int[] nums) {
-
+        mergesort(nums, 0, nums.length - 1);
         return nums;
     }
 
@@ -692,10 +694,211 @@ public class HardTest {
     }
 
     public void merge(int[] nums, int l, int mid, int r) {
-
-
+        Deque<Integer> q = new LinkedList<>();
+        int p1 = l, p2 = mid + 1;
+        while (p1 <= mid && p2 <= r) {
+            if (nums[p1] <= nums[p2]) {
+                q.offerLast(nums[p1++]);
+            } else {
+                q.offerLast(nums[p2++]);
+            }
+        }
+        while (p1 <= mid) {
+            q.offerLast(nums[p1++]);
+        }
+        while (p2 <= r) {
+            q.offerLast(nums[p2++]);
+        }
+        for (int i = l; i <= r; i++) {
+            nums[i] = q.pollFirst();
+        }
     }
 
+    //    315. 计算右侧小于当前元素的个数
+    int[] cnt;
+
+    public List<Integer> countSmaller(int[] nums) {
+        int n = nums.length;
+        cnt = new int[n];
+        Pair<Integer, Integer>[] pnums = new Pair[n];
+        for (int i = 0; i < n; i++) {
+            pnums[i] = new Pair<>(nums[i], i);
+        }
+        pmergesort(pnums, 0, n - 1);
+//        MyUtile.dis(cnt);
+        return Arrays.stream(cnt).boxed().collect(Collectors.toList());
+    }
+
+    public void pmergesort(Pair<Integer, Integer>[] nums, int l, int r) {
+        if (l < r) {
+            int mid = l + (r - l) / 2;
+            pmergesort(nums, l, mid);
+            pmergesort(nums, mid + 1, r);
+            pmerge(nums, l, mid, r);
+        }
+    }
+
+    public void pmerge(Pair<Integer, Integer>[] nums, int l, int mid, int r) {
+        Deque<Pair<Integer, Integer>> q = new LinkedList<>();
+        int p1 = l, p2 = mid + 1;
+        while (p1 <= mid && p2 <= r) {
+            if (nums[p1].getKey() <= nums[p2].getKey()) {
+                q.offerLast(nums[p1++]);
+                cnt[q.peekLast().getValue()] += p2 - mid - 1;
+            } else {
+                q.offerLast(nums[p2++]);
+            }
+        }
+        while (p1 <= mid) {
+            q.offerLast(nums[p1++]);
+            cnt[q.peekLast().getValue()] += p2 - mid - 1;
+        }
+        while (p2 <= r) {
+            q.offerLast(nums[p2++]);
+        }
+        for (int i = l; i <= r; i++) {
+            nums[i] = q.pollFirst();
+        }
+    }
+
+
+    //    LCR 170. 交易逆序对的总数
+    public int reversePairs(int[] record) {
+        int n = record.length;
+        cnt = new int[n];
+        Pair<Integer, Integer>[] pnums = new Pair[n];
+        for (int i = 0; i < n; i++) {
+            pnums[i] = new Pair<>(record[i], i);
+        }
+        pmergesort(pnums, 0, n - 1);
+//        MyUtile.dis(cnt);
+        return Arrays.stream(cnt).sum();
+    }
+
+    //    493. 翻转对 (未完成)
+    public int reversePairs2(int[] nums) {
+        int n = nums.length;
+        cnt = new int[n];
+        Pair<Integer, Integer>[] pnums = new Pair[n];
+        for (int i = 0; i < n; i++) {
+            pnums[i] = new Pair<>(nums[i], i);
+        }
+        pmergesort2(pnums, 0, n - 1);
+//        MyUtile.dis(cnt);
+        return Arrays.stream(cnt).sum();
+    }
+
+    public void pmergesort2(Pair<Integer, Integer>[] nums, int l, int r) {
+        if (l < r) {
+            int mid = l + (r - l) / 2;
+            pmergesort2(nums, l, mid);
+            pmergesort2(nums, mid + 1, r);
+            pmerge2(nums, l, mid, r);
+        }
+    }
+
+    public void pmerge2(Pair<Integer, Integer>[] nums, int l, int mid, int r) {
+        Deque<Pair<Integer, Integer>> q = new LinkedList<>();
+        int p1 = l, p2 = mid + 1;
+        while (p1 <= mid && p2 <= r) {
+            if (nums[p1].getKey() <= nums[p2].getKey()) {
+                q.offerLast(nums[p1++]);
+
+                for (int i = mid + 1; i <= p2; i++) {
+                    if (q.peekLast().getKey() > 2 * nums[i].getKey()) {
+                        cnt[q.peekLast().getValue()]++;
+                    }
+                }
+            } else {
+                q.offerLast(nums[p2++]);
+            }
+        }
+        while (p1 <= mid) {
+            q.offerLast(nums[p1++]);
+            for (int i = mid + 1; i <= p2; i++) {
+                if (q.peekLast().getKey() > 2 * nums[i].getKey()) {
+                    cnt[q.peekLast().getValue()]++;
+                }
+            }
+        }
+        while (p2 <= r) {
+            q.offerLast(nums[p2++]);
+        }
+        for (int i = l; i <= r; i++) {
+            nums[i] = q.pollFirst();
+        }
+    }
+
+
+    //10. 正则表达式匹配
+    public boolean isMatch(String s, String p) {
+        return isMatch(s, p, 0, 0);
+    }
+
+    public boolean isMatch(String s, String p, int i, int j) {
+        int m = s.length(), n = p.length();
+        if (i == m) {
+            if ((n - j) % 2 == 1) {
+                return false;
+            }
+            for (int k = j + 1; k < n; k += 2) {
+                if (p.charAt(k) != '*') {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (j == n) {
+            return false;
+        }
+        if (s.charAt(i) == p.charAt(j) || p.charAt(j) == '.') {
+            if (j + 1 < n && p.charAt(j + 1) == '*') {
+                return isMatch(s, p, i, j + 2) || isMatch(s, p, i + 1, j);
+            } else {
+                return isMatch(s, p, i + 1, j + 1);
+            }
+        } else {
+            if (j + 1 < n && p.charAt(j + 1) == '*') {
+                return isMatch(s, p, i, j + 2);
+            } else {
+                return false;
+            }
+        }
+    }
+
+    //329. 矩阵中的最长递增路径
+    public int longestIncreasingPath(int[][] matrix) {
+        List<Pair<Integer, Integer>> move = new ArrayList<>();
+        move.add(new Pair<>(-1, 0));
+        move.add(new Pair<>(1, 0));
+        move.add(new Pair<>(0, -1));
+        move.add(new Pair<>(0, 1));
+        int m = matrix.length, n = matrix[0].length, res = 0;
+        int[][] memo = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                res = Math.max(res, longestIncreasingPath(matrix, i, j, move, memo));
+            }
+        }
+        return res;
+    }
+
+    public int longestIncreasingPath(int[][] matrix, int i, int j, List<Pair<Integer, Integer>> move, int[][] memo) {
+        int m = matrix.length, n = matrix[0].length;
+        if (i < 0 || i >= m || j < 0 || j >= n) {
+            return 0;
+        }
+        if (memo[i][j] != 0) {
+            return memo[i][j];
+        }
+        return memo[i][j] = move.stream().map(e -> {
+            int newi = i + e.getKey(), newj = j + e.getValue();
+            if ((newi >= 0 && newi < m && newj >= 0 && newj < n) && matrix[newi][newj] > matrix[i][j]) {
+                return longestIncreasingPath(matrix, newi, newj, move, memo) + 1;
+            }
+            return 1;
+        }).mapToInt(Integer::intValue).max().getAsInt();
+    }
 
     public static void main(String[] args) {
         int[] ids = new int[]{1, 2, 3, 4, 5};
@@ -725,7 +928,7 @@ public class HardTest {
 //        System.out.println(hardTest.reverseKGroup2(dummyNode.next, 3));
 
 
-        int[] nums1 = new int[]{-7, -8, 7, 5, 7, 1, 6, 0};
+        int[] nums1 = new int[]{2, 4, 3, 5, 1};
         int[] nums2 = new int[]{3, 4};
 //        hardTest.findMedianSortedArrays(nums1, nums2);
 //        hardTest.maxSlidingWindow(nums1, 4);
@@ -733,7 +936,7 @@ public class HardTest {
 //        hardTest.isValid("()");
 //        System.out.println(hardTest.longestValidParentheses("()"));
 //        System.out.println(hardTest.calculate(" 2-1 + 2 "));
-        System.out.println(hardTest.findKthNumber(2, 2));
+        System.out.println(hardTest.reversePairs2(nums1));
     }
 }
 
@@ -750,5 +953,40 @@ class TrieNode2 {
         this.val = val;
     }
 }
+
+class MedianFinder2 {
+    PriorityQueue<Integer> left;
+    PriorityQueue<Integer> right;
+
+    public MedianFinder2() {
+        left = new PriorityQueue<>(((o1, o2) -> o2 - o1));
+        right = new PriorityQueue<>();
+    }
+
+    public void addNum(int num) {
+        if (left.size() <= right.size()) {
+            right.offer(num);
+            left.offer(right.poll());
+        } else {
+            left.offer(num);
+            right.offer(left.poll());
+        }
+    }
+
+    public double findMedian() {
+        if (left.size() == right.size()) {
+            return (left.peek() + right.peek()) / 2.0;
+        }
+        return left.size() > right.size() ? left.peek() : right.peek();
+
+    }
+}
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder obj = new MedianFinder();
+ * obj.addNum(num);
+ * double param_2 = obj.findMedian();
+ */
 
 
