@@ -676,34 +676,23 @@ public class HardTest {
 //        return 0;
 //    }
 
-
-
-    class TrieNode2 {
-        int val;
-        boolean end;
-        int realChildNum = 0;
-        TrieNode2[] child = new TrieNode2[10];
-
-        public TrieNode2() {
-        }
-
-        public TrieNode2(int val) {
-            this.val = val;
-        }
-    }
-
     //912. 排序数组
     public int[] sortArray(int[] nums) {
 
         return nums;
-
     }
 
     public void mergesort(int[] nums, int l, int r) {
-
+        if (l < r) {
+            int mid = l + (r - l) / 2;
+            mergesort(nums, l, mid);
+            mergesort(nums, mid + 1, r);
+            merge(nums, l, mid, r);
+        }
     }
 
     public void merge(int[] nums, int l, int mid, int r) {
+
 
     }
 
