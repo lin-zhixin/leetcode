@@ -900,6 +900,77 @@ public class HardTest {
         }).mapToInt(Integer::intValue).max().getAsInt();
     }
 
+    //124. 二叉树中的最大路径和
+    int maxPathSum = -999999;
+
+    public int maxPathSum(TreeNode root) {
+        maxPathSum2(root);
+        return maxPathSum;
+    }
+
+    public int maxPathSum2(TreeNode root) {
+        if (root == null) {
+            return -999999;
+        }
+        int left = maxPathSum2(root.left);
+        int right = maxPathSum2(root.right);
+        PriorityQueue<Integer> t = new PriorityQueue<>((o1, o2) -> o2 - o1);
+        t.offer(root.val);
+        t.offer(left + root.val);
+        t.offer(right + root.val);
+        int res = t.peek();
+        t.offer(left);
+        t.offer(right);
+        t.offer(left + right + root.val);
+        maxPathSum = Math.max(maxPathSum, t.peek());
+//        System.out.println(max);
+        return res;
+    }
+
+
+    //135. 分发糖果
+    public int candy2(int[] ratings) {
+        int n = ratings.length, inc = 1, dec = 0, pre = 1, res = 1;
+        for (int i = 1; i < n; i++) {
+            if (ratings[i] >= ratings[i - 1]) {
+                dec = 0;
+                pre = ratings[i] == ratings[i - 1] ? 1 : pre + 1;
+                res += pre;
+                inc = pre;
+            } else {
+//                降序的情况实际上就是从1开始加，反过来看  特殊情况就是dec == inc 降序序列长度等于上一个升序的时候要加一，因为降序的第一个值不能和升序最后一个相等 违背规则
+                dec++;
+                if (dec == inc) {
+                    dec++;
+                }
+                res += dec;
+                pre = 1;
+            }
+        }
+
+        return res;
+
+    }
+
+    public int candy(int[] ratings) {
+        int n = ratings.length, sum = 0;
+        int[] res = new int[n];
+        Arrays.fill(res, 1);
+        for (int i = 1; i < n; i++) {
+            if (ratings[i - 1] < ratings[i]) {
+                res[i] = res[i - 1] + 1;
+            }
+        }
+        for (int i = n - 1; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1] && res[i] <= res[i + 1]) {
+                res[i] = Math.max(res[i + 1] + 1, res[i] + 1);
+            }
+        }
+//        MyUtile.dis(res);
+
+        return Arrays.stream(res).sum();
+    }
+
     public static void main(String[] args) {
         int[] ids = new int[]{1, 2, 3, 4, 5};
         ListNode dummyNode = new ListNode(-1);
@@ -928,7 +999,7 @@ public class HardTest {
 //        System.out.println(hardTest.reverseKGroup2(dummyNode.next, 3));
 
 
-        int[] nums1 = new int[]{2, 4, 3, 5, 1};
+        int[] nums1 = new int[]{1, 3, 2, 2, 1};
         int[] nums2 = new int[]{3, 4};
 //        hardTest.findMedianSortedArrays(nums1, nums2);
 //        hardTest.maxSlidingWindow(nums1, 4);
@@ -936,7 +1007,7 @@ public class HardTest {
 //        hardTest.isValid("()");
 //        System.out.println(hardTest.longestValidParentheses("()"));
 //        System.out.println(hardTest.calculate(" 2-1 + 2 "));
-        System.out.println(hardTest.reversePairs2(nums1));
+        System.out.println(hardTest.candy(nums1));
     }
 }
 
@@ -989,4 +1060,179 @@ class MedianFinder2 {
  * double param_2 = obj.findMedian();
  */
 
+//297. 二叉树的序列化与反序列化
+class Codec {
 
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        StringBuilder sb = new StringBuilder();
+        serialize(root, sb);
+        return sb.toString();
+    }
+
+    public void serialize(TreeNode root, StringBuilder sb) {
+        if (root == null) {
+            sb.append("#,");
+            return;
+        }
+        sb.append(root.val).append(",");
+        serialize(root.left, sb);
+        serialize(root.right, sb);
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        Deque<String> q = new LinkedList<>();
+        for (String s : data.split(",")) {
+            q.offerLast(s);
+        }
+        return deserialize(q);
+    }
+
+    public TreeNode deserialize(Deque<String> q) {
+        if (q.isEmpty()) {
+            return null;
+        }
+        if (Objects.equals(q.peekFirst(), "#")) {
+            q.pollFirst();
+            return null;
+        }
+        TreeNode root = new TreeNode(Integer.parseInt(q.pollFirst()));
+        root.left = deserialize(q);
+        root.right = deserialize(q);
+        return root;
+    }
+}
+
+// Your Codec object will be instantiated and called as such:
+// Codec ser = new Codec();
+// Codec deser = new Codec();
+// TreeNode ans = deser.deserialize(ser.serialize(root));
+
+
+class LRUCache3 {
+    DlinkNode2 head = new DlinkNode2(), tail = new DlinkNode2();
+    Map<Integer, DlinkNode2> cache = new HashMap<>();
+    int cap, size;
+
+    public LRUCache3(int capacity) {
+        cap = capacity;
+        size = 0;
+        head.next = tail;
+        tail.pre = head;
+    }
+
+    public int get(int key) {
+        if (!cache.containsKey(key)) {
+            return -1;
+        }
+        return move2Head(cache.get(key)).val;
+    }
+
+    public void put(int key, int value) {
+        if (cache.containsKey(key)) {
+            DlinkNode2 node = cache.get(key);
+            node.val = value;
+            move2Head(node);
+        } else {
+            DlinkNode2 node = new DlinkNode2(key, value);
+            cache.put(key, addHead(node));
+            size++;
+            if (size > cap) {
+                cache.remove(delete(tail.pre).key);
+                size--;
+            }
+        }
+
+    }
+
+    public DlinkNode2 delete(DlinkNode2 node) {
+        node.pre.next = node.next;
+        node.next.pre = node.pre;
+        return node;
+    }
+
+    public DlinkNode2 move2Head(DlinkNode2 node) {
+        return addHead(delete(node));
+    }
+
+    public DlinkNode2 addHead(DlinkNode2 node) {
+        node.pre = head;
+        node.next = head.next;
+        head.next.pre = node;
+        head.next = node;
+        return node;
+    }
+}
+
+class DlinkNode2 {
+    int key, val;
+    DlinkNode2 pre, next;
+
+    public DlinkNode2() {
+    }
+
+    public DlinkNode2(int key, int val) {
+        this.key = key;
+        this.val = val;
+    }
+}
+
+
+//460. LFU 缓存 重点在数据结构的选择
+class LFUCache {
+
+    Map<Integer, Integer> kv;
+    Map<Integer, Integer> kf;
+    //    LinkedHashSet结合hash和链表的优点实现快速O(1)访问、根据时间有序存储(能够快速删除最久未使用的节点)
+    Map<Integer, LinkedHashSet<Integer>> fk;
+    int minf;
+    int cap;
+
+    public LFUCache(int capacity) {
+        cap = capacity;
+        minf = 0;
+        kv = new HashMap<>();
+        kf = new HashMap<>();
+        fk = new HashMap<>();
+    }
+
+    public int get(int key) {
+        if (!kv.containsKey(key)) {
+            return -1;
+        }
+        int oldf = kf.get(key);
+        kf.put(key, oldf + 1);
+        fk.get(oldf).remove(key);
+        fk.putIfAbsent(oldf + 1, new LinkedHashSet<>());
+        fk.get(oldf + 1).add(key);
+        if (oldf == minf && fk.get(oldf).isEmpty()) {
+            minf++;
+            fk.remove(oldf);
+        }
+//        System.out.println("kv:" + kv);
+//        System.out.println("kf:" + kf);
+        return kv.get(key);
+    }
+
+    public void put(int key, int value) {
+        if (kv.containsKey(key)) {
+            kv.put(key, value);
+            get(key);
+        } else {
+            kv.put(key, value);
+            kf.put(key, 1);
+            fk.putIfAbsent(1, new LinkedHashSet<>());
+            fk.get(1).add(key);
+            if (kv.size() > cap) {
+                Integer del = fk.get(minf).iterator().next();
+                fk.get(minf).remove(del);
+                kv.remove(del);
+                kf.remove(del);
+            }
+            minf = 1;
+        }
+//        System.out.println("kv:" + kv);
+//        System.out.println("kf:" + kf);
+    }
+}
