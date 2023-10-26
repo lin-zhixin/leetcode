@@ -2,18 +2,83 @@ package test3;
 
 //数字相关题目
 
-import category.MyUtile;
-import category.SortTest;
-import javafx.util.Pair;
-
-import java.awt.image.WritableRenderedImage;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+
 //import org.apache.commons.collections.CollectionUtils;
 
 public class Numbers {
+    //    179. 最大数
+    public String largestNumber(int[] nums) {
+        List<Long> list = Arrays.stream(nums).mapToLong(Integer::toUnsignedLong).boxed().sorted((a, b) -> (int) ((long) (b * Math.pow(10, a.toString().length()) + a) - (a * Math.pow(10, b.toString().length()) + b))).collect(Collectors.toList());
+        System.out.println(list);
+        StringBuilder sb = new StringBuilder();
+        list.forEach(sb::append);
+        while (sb.length() > 0 && sb.charAt(0) == '0') {
+            sb.delete(0, 1);
+        }
+        return Objects.equals(sb.toString(), "") ? "0" : sb.toString();
+    }
+
+    //300. 最长递增子序列
+    public int lengthOfLIS(int[] nums) {
+        int n = nums.length, p = -1;
+        int[] heap = new int[n];
+        for (int i = 0; i < n; i++) {
+            int tp = lowerBound(heap, 0, p, nums[i]);
+            heap[tp] = nums[i];
+            if (tp > p) {
+                p++;
+            }
+        }
+        return p + 1;
+    }
+
+    public int lowerBound(int[] heap, int l, int r, int k) {
+        while (l <= r) {
+            int m = l + (r - l) / 2;
+            if (heap[m] == k) {
+                r = m - 1;
+            } else if (heap[m] < k) {
+                l = m + 1;
+            } else if (heap[m] > k) {
+                r = m - 1;
+            }
+        }
+        return l;
+    }
+
+    //128. 最长连续序列
+    public int longestConsecutive(int[] nums) {
+        int n = nums.length;
+        int res = 0;
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            map.put(nums[i], 0);
+        }
+        for (int i = 0; i < n; i++) {
+            int now = nums[i], cnt = 1;
+            if (map.get(now) == 1) {
+                continue;
+            }
+            map.put(now, 1);
+            while (map.containsKey(now = now - 1)) {
+                map.put(now, 1);
+                cnt++;
+            }
+            now = nums[i];
+            while (map.containsKey(now = now + 1)) {
+                map.put(now, 1);
+                cnt++;
+            }
+            res = Math.max(res, cnt);
+        }
+//        map.forEach((k, v) -> res.set(Math.max(res.get(), v)));
+        return res;
+    }
+
+
     public int hammingWeight(long n) {
         int res = 0;
         while (n != 0) {

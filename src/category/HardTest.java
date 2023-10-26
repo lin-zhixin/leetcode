@@ -971,6 +971,710 @@ public class HardTest {
         return Arrays.stream(res).sum();
     }
 
+    //    51. N 皇后
+    public List<List<String>> solveNQueens(int n) {
+        int[][] map = new int[n][n];
+        List<List<Pair<Integer, Integer>>> res = new ArrayList<>();
+        solveNQueens(n, 0, new ArrayList<>(), res);
+        System.out.println(res);
+        return null;
+    }
+
+    public void solveNQueens(int n, int row, List<Pair<Integer, Integer>> points, List<List<Pair<Integer, Integer>>> res) {
+        if (row == n) {
+            res.add(new ArrayList<>(points));
+        }
+        for (int i = 0; i < n; i++) {
+            if (isvalid(points, row, i)) {
+                points.add(new Pair<>(row, i));
+                solveNQueens(n, row + 1, points, res);
+                points.remove(points.size() - 1);
+            }
+        }
+    }
+
+    public boolean isvalid(List<Pair<Integer, Integer>> points, int i, int j) {
+        return points.stream().noneMatch(e -> i == e.getKey() || j == e.getValue() || Math.abs(i - e.getKey()) == Math.abs(j - e.getValue()));
+    }
+
+
+    //44. 通配符匹配
+    public boolean isMatch2(String s, String p) {
+        int[][] memo = new int[s.length()][p.length()];
+        for (int i = 0; i < s.length(); i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return isMatch2(s, p, 0, 0, memo);
+    }
+
+    public boolean isMatch2(String s, String p, int i, int j, int[][] memo) {
+        int m = s.length(), n = p.length();
+        if (j == n) {
+            return i == m;
+        }
+        if (i == m) {
+            for (int k = j; k < n; k++) {
+                if (p.charAt(k) != '*') {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (memo[i][j] != -1) {
+            return memo[i][j] == 1;
+        }
+        if (s.charAt(i) == p.charAt(j) || p.charAt(j) == '?') {
+            return (memo[i][j] = isMatch2(s, p, i + 1, j + 1, memo) ? 1 : 0) == 1;
+        } else {
+            if (p.charAt(j) == '*') {
+                return (memo[i][j] = (isMatch2(s, p, i, j + 1, memo) || isMatch2(s, p, i + 1, j, memo)) ? 1 : 0) == 1;
+            } else {
+                return (memo[i][j] = 0) == 1;
+            }
+        }
+    }
+
+    //115. 不同的子序列
+    int numDistinctCnt = 0;
+
+    public int numDistinct(String s, String t) {
+        List<List<Pair<Integer, Integer>>> res = new ArrayList<>();
+        int m = s.length(), n = t.length();
+
+        int[][] memo = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+//        numDistinctCnt = 0;
+//        numDistinct(s, t, 0, 0, new LinkedList<>(), res, memo);
+//        System.out.println(res);
+//        return numDistinctCnt;
+//        System.out.println(numDistinct(s, t, 0, 0, new LinkedList<>(), res, dp));
+        return numDistinct(s, t, 0, 0, new LinkedList<>(), res, memo);
+    }
+
+    public int numDistinct(String s, String t, int i, int j, Deque<Integer> q, List<List<Pair<Integer, Integer>>> res, int[][] memo) {
+
+        int m = s.length(), n = t.length();
+        if (j == n) {
+//            System.out.println(q);
+            return 1;
+        }
+        if (i == m) {
+            if (j < n) {
+                return 0;
+            }
+        }
+        if (memo[i][j] != -1) {
+            return memo[i][j];
+        }
+        int r = 0;
+        if (s.charAt(i) == t.charAt(j)) {
+            r += (numDistinct(s, t, i + 1, j + 1, q, res, memo) + numDistinct(s, t, i + 1, j, q, res, memo));
+        } else {
+            r += numDistinct(s, t, i + 1, j, q, res, memo);
+        }
+        return memo[i][j] = r;
+    }
+
+
+    public int lengthOfLIS(int[] nums) {
+        int n = nums.length, piles = 0;
+        int[] top = new int[n];
+        for (int i = 0; i < n; i++) {
+            int id = lowerBound(top, 0, piles - 1, nums[i]);
+            System.out.println(id);
+            if (id == piles) {
+                piles++;
+            }
+            top[id] = nums[i];
+        }
+        return piles;
+
+    }
+
+    public int lowerBound(int[] nums, int l, int r, int target) {
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (target == nums[mid]) {
+                r = mid - 1;
+            } else if (target < nums[mid]) {
+                r = mid - 1;
+            } else if (target > nums[mid]) {
+                l = mid + 1;
+            }
+        }
+
+        return l;
+
+    }
+
+
+    //354.俄罗斯套娃信封问题
+    public int maxEnvelopes(int[][] envelopes) {
+        int n = envelopes.length, res = 0;
+        Arrays.sort(envelopes, (o1, o2) -> o1[0] == o2[0] ? o2[1] - o1[1] : o1[0] - o2[0]);
+        int[] nums = new int[n], dp = new int[n];
+        Arrays.fill(dp, 1);
+        for (int i = 0; i < n; i++) {
+            nums[i] = envelopes[i][1];
+        }
+        return lengthOfLIS(nums);
+//        dp超时版本：
+//        for (int i = 0; i < n; i++) {
+//            for (int j = 0; j < i; j++) {
+//                if (nums[j] < nums[i]) {
+//                    dp[i] = Math.max(dp[i], dp[j] + 1);
+//                }
+//            }
+//            res = Math.max(res, dp[i]);
+//        }
+//        return res;
+
+
+    }
+
+    //57. 插入区间
+    public int[][] insert(int[][] intervals, int[] newInterval) {
+        int n = intervals.length, i;
+        int[][] ints = new int[n + 1][n + 1];
+        for (i = 0; i < n; i++) {
+            ints[i][0] = intervals[i][0];
+            ints[i][1] = intervals[i][1];
+        }
+        ints[i][0] = newInterval[0];
+        ints[i][1] = newInterval[1];
+        Arrays.sort(intervals, (o1, o2) -> o1[0] == o2[0] ? o2[1] - o1[1] : o1[0] - o2[0]);
+//        int[][] res=new int[n+1][n+1];
+        int l = ints[0][0], r = ints[0][1];
+        List<int[]> res = new ArrayList<>();
+        for (int j = 0; j < ints.length; j++) {
+            if (ints[i][0] <= r && r <= ints[i][1]) {
+                r = ints[i][1];
+            } else if (r < ints[i][0]) {
+                res.add(new int[]{l, r});
+                l = ints[i][0];
+                r = ints[i][1];
+            }
+            System.out.println(l + " :" + r);
+        }
+        res.add(new int[]{l, r});
+        System.out.println(res);
+        return res.toArray(new int[res.size()][]);
+    }
+
+    //154. 寻找旋转排序数组中的最小值 II
+    public int findMin(int[] nums) {
+        int l = 0, r = nums.length - 1, n = nums.length;
+
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+//            用左边时候需要添加是否已经是单调的判断，否则会出界 原因：对于l来说一旦出现单调说明l一定是最小值，
+//            因为正常l一定是大于等于r的 l的移动要么是mid+1要么++，两种情况不会产生跨越最小值的情况：
+            if (nums[l] < nums[r]) {
+                return nums[l];
+            }
+            if (nums[mid] < nums[l]) {
+                r = mid;
+            } else if (nums[mid] > nums[l]) {
+                l = mid + 1;
+            } else if (nums[mid] == nums[l]) {
+                l++;
+            }
+        }
+        return nums[l - 1];
+
+    }
+
+
+    //1444. 切披萨的方案数
+    public int ways(String[] pizza, int k) {
+        int m = pizza.length, n = pizza[0].length(), mod = 1000000007;
+//        apple[i][j]:以apple[i][j]为左上角的剩余矩形所包含的苹果数
+        int[][] apple = new int[m + 1][n + 1];
+//        dp[k][i][j]:以apple[i][j]为左上角的剩余矩形分为k块的方案数
+        int[][][] dp = new int[k + 1][m + 1][n + 1];
+
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                apple[i][j] = apple[i + 1][j] + apple[i][j + 1] - apple[i + 1][j + 1] + (pizza[i].charAt(j) == 'A' ? 1 : 0);
+                dp[1][i][j] = apple[i][j] > 0 ? 1 : 0;
+            }
+        }
+
+        for (int i = 2; i <= k; i++) {
+            for (int j = 0; j < m; j++) {
+                for (int l = 0; l < n; l++) {
+
+                    for (int row = j + 1; row < m; row++) {
+                        if (apple[j][l] > apple[row][l]) {
+                            dp[i][j][l] = (dp[i][j][l] + dp[i - 1][row][l]) % mod;
+                        }
+                    }
+                    for (int col = l + 1; col < n; col++) {
+                        if (apple[j][l] > apple[j][col]) {
+                            dp[i][j][l] = (dp[i][j][l] + dp[i - 1][j][col]) % mod;
+                        }
+                    }
+                }
+            }
+
+        }
+        return dp[k][0][0];
+
+    }
+
+    //149. 直线上最多的点数
+    public int gcd(int a, int b) {
+        return b == 0 ? a : gcd(b, a % b);
+    }
+
+    public int maxPoints(int[][] points) {
+        int n = points.length, res = 0;
+        if (n == 1 || n == 2) {
+            return n;
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (res > n / 2 || res >= n - i) {
+                return res;
+            }
+            Map<Pair<Integer, Integer>, Integer> cnt = new HashMap<>();
+            for (int j = i + 1; j < n; j++) {
+                int dy = points[i][1] - points[j][1];
+                int dx = points[i][0] - points[j][0];
+
+                if (dx == 0) {
+                    dy = 1;
+                } else if (dy == 0) {
+                    dx = 1;
+                } else {
+                    if (dx < 0) {
+                        dx = -dx;
+                        dy = -dy;
+                    }
+                    int gcd = gcd(Math.abs(dx), Math.abs(dy));
+                    dx /= gcd;
+                    dy /= gcd;
+                }
+                Pair<Integer, Integer> key = new Pair<>(dx, dy);
+                cnt.put(key, cnt.getOrDefault(key, 1) + 1);
+                res = Math.max(res, cnt.get(key));
+            }
+        }
+        return res;
+
+
+//        int n = points.length;
+//        if (n <= 2) {
+//            return n;
+//        }
+//        int ret = 0;
+//        for (int i = 0; i < n; i++) {
+//            if (ret >= n - i || ret > n / 2) {
+//                break;
+//            }
+//            Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+//            for (int j = i + 1; j < n; j++) {
+//                int x = points[i][0] - points[j][0];
+//                int y = points[i][1] - points[j][1];
+//                if (x == 0) {
+//                    y = 1;
+//                } else if (y == 0) {
+//                    x = 1;
+//                } else {
+//                    if (y < 0) {
+//                        x = -x;
+//                        y = -y;
+//                    }
+//                    int gcdXY = gcd(Math.abs(x), Math.abs(y));
+//                    x /= gcdXY;
+//                    y /= gcdXY;
+//                }
+//                int key = y + x * 20001;
+//                map.put(key, map.getOrDefault(key, 0) + 1);
+//            }
+//            int maxn = 0;
+//            for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+//                int num = entry.getValue();
+//                maxn = Math.max(maxn, num + 1);
+//            }
+//            ret = Math.max(ret, maxn);
+//        }
+//        return ret;
+    }
+
+//    public int gcd(int a, int b) {
+//        return b != 0 ? gcd(b, a % b) : a;
+//    }
+//    作者：力扣官方题解
+//    链接：https://leetcode.cn/problems/max-points-on-a-line/solutions/842114/zhi-xian-shang-zui-duo-de-dian-shu-by-le-tq8f/
+//    来源：力扣（LeetCode）
+//    著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+    //496. 下一个更大元素 I
+    public int[] nextGreaterElement(int[] nums1, int[] nums2) {
+        Map<Integer, Integer> cnt = new HashMap<>();
+        int n = nums2.length;
+        Stack<Integer> stack = new Stack<>();
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && stack.peek() <= nums2[i]) {
+                stack.pop();
+            }
+            cnt.put(nums2[i], stack.isEmpty() ? -1 : stack.peek());
+            stack.push(nums2[i]);
+        }
+        for (int i = 0; i < nums1.length; i++) {
+            nums1[i] = cnt.get(nums1[i]);
+        }
+        return nums1;
+
+    }
+
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length;
+        int[] left = new int[n];
+        int[] right = new int[n];
+        Stack<Integer> stack = new Stack<>();
+        for (int i = 0; i < n; i++) {
+//            >=表示只取低于当前h的下标
+            while (!stack.isEmpty() && heights[stack.peek()] >= heights[i] && stack.pop() != null) ;
+//            栈为空说明左边全是小于当前h的
+            left[i] = stack.isEmpty() ? -1 : stack.peek();
+            stack.push(i);
+        }
+        stack.clear();
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] >= heights[i] && stack.pop() != null) ;
+            //            栈为空说明右边全是小于当前h的
+            right[i] = stack.isEmpty() ? n : stack.peek();
+            stack.push(i);
+        }
+//        MyUtile.dis(left);
+//        MyUtile.dis(right);
+
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+//            right[i] - left[i] - 1：实际上是（r-1）-(l+1)+1
+            res = Math.max(res, (right[i] - left[i] - 1) * heights[i]);
+        }
+        return res;
+    }
+
+    //85. 最大矩形
+    public static void disMap(int[][] a) {
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[i].length; j++) {
+                System.out.print("(" + i + "," + j + ") " + a[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    public int maximalRectangle(char[][] matrix) {
+        int m = matrix.length, res = 0;
+        if (m == 0) {
+            return res;
+        }
+        int n = matrix[0].length;
+        int[][] left = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (j == 0) {
+                    left[i][j] = matrix[i][j] - '0';
+                    continue;
+                }
+                left[i][j] = matrix[i][j] == '1' ? left[i][j - 1] + 1 : 0;
+            }
+        }
+        disMap(left);
+        for (int j = 0; j < n; j++) {
+            List<Integer> colNums = new ArrayList<>();
+            for (int i = 0; i < m; i++) {
+                colNums.add(left[i][j]);
+            }
+            int colmax = largestRectangleArea(colNums.stream().mapToInt(Integer::intValue).toArray());
+            res = Math.max(res, colmax);
+        }
+        return res;
+
+    }
+
+    //28. 找出字符串中第一个匹配项的下标
+    // Rabin-Karp 指纹字符串查找算法：https://mp.weixin.qq.com/s/HiEft8sW5QzHcM5mb5_V6g
+    public int strStr(String haystack, String needle) {
+//        整体思路就是通过待匹配的字符串的hash去确定是否在txt中可能存在相同串(hash相同初步确定可能相同 之后通过字符串的equals比较)
+//        hash是生成就是根据类似字符串转int类型数字的表示方法确定的，就是当前数*进制+当前位的值；"1234"->123*10+4,同理推算256进制
+        long n = haystack.length(), l = needle.length(), r = 256, q = Integer.MAX_VALUE, rl_1 = 1, patHash = 0;
+        for (int i = 0; i < l - 1; i++) {
+            rl_1 = (rl_1 * r) % q;
+        }
+        for (int i = 0; i < l; i++) {
+            patHash = (patHash * r % q + needle.charAt(i)) % q;
+        }
+        int le = 0, ri = 0;
+        long winHash = 0;
+        while (ri < n) {
+            winHash = (winHash * r % q + haystack.charAt(ri++)) % q;
+            if (ri - le == l) {
+                if (winHash == patHash && Objects.equals(haystack.substring(le, ri), needle)) {
+                    return le;
+                }
+                // 因为 windowHash - (txt[left] * RL) % Q 可能是负数
+                // 所以额外再加一个 Q，保证 windowHash 不会是负数
+                winHash = (winHash - (haystack.charAt(le++) * rl_1) % q + q) % q;
+            }
+        }
+        return -1;
+
+
+//
+//
+////        // 位数
+////        int L = pat.length();
+////        // 进制（只考虑 ASCII 编码）
+////        int R = 256;
+////        // 取一个比较大的素数作为求模的除数
+////        long Q = 1658598167;
+////        // R^(L - 1) 的结果
+////        long RL = 1;
+////        for (int i = 1; i <= L - 1; i++) {
+////            // 计算过程中不断求模，避免溢出
+////            RL = (RL * R) % Q;
+////        }
+////        // 计算模式串的哈希值，时间 O(L)
+////        long patHash = 0;
+////        for (int i = 0; i < pat.length(); i++) {
+////            patHash = (R * patHash + pat.charAt(i)) % Q;
+////        }
+////
+////        // 滑动窗口中子字符串的哈希值
+////        long windowHash = 0;
+////
+////        // 滑动窗口代码框架，时间 O(N)
+////        int left = 0, right = 0;
+////        while (right < txt.length()) {
+////            // 扩大窗口，移入字符
+////            windowHash = ((R * windowHash) % Q + txt.charAt(right)) % Q;
+////            right++;
+////
+////            // 当子串的长度达到要求
+////            if (right - left == L) {
+////                // 根据哈希值判断是否匹配模式串
+////                if (windowHash == patHash) {
+////                    // 当前窗口中的子串哈希值等于模式串的哈希值
+////                    // 还需进一步确认窗口子串是否真的和模式串相同，避免哈希冲突
+////                    if (pat.equals(txt.substring(left, right))) {
+////                        return left;
+////                    }
+////                }
+////                // 缩小窗口，移出字符
+////                windowHash = (windowHash - (txt.charAt(left) * RL) % Q + Q) % Q;
+////                // X % Q == (X + Q) % Q 是一个模运算法则
+////                // 因为 windowHash - (txt[left] * RL) % Q 可能是负数
+////                // 所以额外再加一个 Q，保证 windowHash 不会是负数
+////
+////                left++;
+////            }
+////        }
+////        // 没有找到模式串
+////        return -1;
+    }
+
+    public int mypow(int n, int k) {
+        int res = 1, base = n;
+        while (k != 0) {
+            if (k % 2 == 1) {
+                res *= base;
+            }
+            k /= 2;
+            base *= base;
+        }
+        return res;
+    }
+
+    //1044. 最长重复子串
+//    先用187题目的 字符串哈希 + 前缀和解法先解出来吧，hard题目真的难。
+    class Solution {
+        long P = 31;
+        long[] h;
+        long[] p;
+        public String longestDupSubstring(String s) {
+            h = new long[s.length()+1];
+            p = new long[s.length()+1];
+            p[0] = 1;
+            for(int i = 1;i<=s.length();i++){
+                h[i] = h[i-1]*P + (long)s.charAt(i-1);
+                p[i] = p[i-1]*P;
+            }
+            int left = 0;
+            int right = s.length();
+            while(left<right){
+                int mid = left+(right-left)/2;
+                String ans = findRepeatedDnaSequences(s, mid);
+                if(ans == ""){
+                    right = mid;
+                }else{
+                    left = mid + 1;
+                }
+            }
+            return findRepeatedDnaSequences(s,left-1);
+        }
+
+        public String findRepeatedDnaSequences(String s, int len) {
+            if(len<0) return "";
+            Map<Long, Integer> map = new HashMap<>();
+            for(int i = len;i<=s.length();i++){
+                long v = h[i] - h[i-len]*p[len];
+                if(map.containsKey(v)){
+                    if(map.get(v) == 1){
+                        return s.substring(i-len,i);
+                    }
+                    map.put(v, map.get(v) + 1);
+                }else map.put(v,1);
+            }
+            return "";
+        }
+    }
+    public String longestDupSubstring(String s) {
+        int n = s.length(), l = 1, r = n - 1, start = -1, len = 0;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            int ind = rabinKarp(s, mid);
+            if (ind != -1) {
+                l = mid + 1;
+                start = ind;
+                len = mid;
+            } else {
+                r = mid - 1;
+            }
+        }
+        return start == -1 ? "" : s.substring(start, start + len);
+    }
+
+    public int rabinKarp(String s, int len) {
+        long R = 256, Rl1 = 1, Q = Integer.MAX_VALUE, winhash = 0;
+        for (int i = 0; i < len - 1; i++) {
+            Rl1 = (Rl1 * R) % Q;
+        }
+        int n = s.length(), l = 0, r = 0;
+//        Map<Long, Set<String>> map = new HashMap<>();
+        Set<Long> set = new HashSet<>();
+        Map<Long, HashSet<String>> map = new HashMap<>();
+        while (r < n) {
+            winhash = (winhash * R % Q + s.charAt(r++)) % Q;
+            if (r - l == len) {
+//                if (map.containsKey(winhash) && map.get(winhash).contains(s.substring(l, r))) {
+                if (!set.add(winhash) && s.indexOf(s.substring(l, r)) != l && map.get(winhash).contains(s.substring(l, r))) {
+                    return l;
+                } else {
+                    map.putIfAbsent(winhash, new LinkedHashSet<>());
+                    map.get(winhash).add(s.substring(l, r));
+                }
+//                if (map.containsKey(winhash)) {
+//                } else {
+//                    map.putIfAbsent(winhash, new LinkedHashSet<>());
+//                    map.get(winhash).add(s.substring(l, r));
+//                }
+                winhash = (winhash - (s.charAt(l++) * Rl1) % Q + Q) % Q;
+            }
+        }
+        return -1;
+    }
+//    public String longestDupSubstring(String s) {
+//        Random random = new Random();
+//        // 生成两个进制
+//        int a1 = random.nextInt(75) + 26;
+//        int a2 = random.nextInt(75) + 26;
+//        // 生成两个模
+//        int mod1 = random.nextInt(Integer.MAX_VALUE - 1000000007 + 1) + 1000000007;
+//        int mod2 = random.nextInt(Integer.MAX_VALUE - 1000000007 + 1) + 1000000007;
+//        int n = s.length();
+//        // 先对所有字符进行编码
+//        int[] arr = new int[n];
+//        for (int i = 0; i < n; ++i) {
+//            arr[i] = s.charAt(i) - 'a';
+//        }
+//        // 二分查找的范围是[1, n-1]
+//        int l = 1, r = n - 1;
+//        int length = 0, start = -1;
+//        while (l <= r) {
+//            int m = l + (r - l + 1) / 2;
+//            int idx = check(arr, m, a1, a2, mod1, mod2);
+//            if (idx != -1) {
+//                // 有重复子串，移动左边界
+//                l = m + 1;
+//                length = m;
+//                start = idx;
+//            } else {
+//                // 无重复子串，移动右边界
+//                r = m - 1;
+//            }
+//        }
+//        return start != -1 ? s.substring(start, start + length) : "";
+//    }
+
+    public int check(int[] arr, int m, int a1, int a2, int mod1, int mod2) {
+        int n = arr.length;
+        long aL1 = pow(a1, m, mod1);
+        long aL2 = pow(a2, m, mod2);
+        long h1 = 0, h2 = 0;
+        for (int i = 0; i < m; ++i) {
+            h1 = (h1 * a1 % mod1 + arr[i]) % mod1;
+            h2 = (h2 * a2 % mod2 + arr[i]) % mod2;
+            if (h1 < 0) {
+                h1 += mod1;
+            }
+            if (h2 < 0) {
+                h2 += mod2;
+            }
+        }
+        // 存储一个编码组合是否出现过
+        Set<Long> seen = new HashSet<Long>();
+        seen.add(h1 * mod2 + h2);
+        for (int start = 1; start <= n - m; ++start) {
+            h1 = (h1 * a1 % mod1 - arr[start - 1] * aL1 % mod1 + arr[start + m - 1]) % mod1;
+            h2 = (h2 * a2 % mod2 - arr[start - 1] * aL2 % mod2 + arr[start + m - 1]) % mod2;
+            if (h1 < 0) {
+                h1 += mod1;
+            }
+            if (h2 < 0) {
+                h2 += mod2;
+            }
+
+            long num = h1 * mod2 + h2;
+            // 如果重复，则返回重复串的起点
+            if (!seen.add(num)) {
+                return start;
+            }
+        }
+        // 没有重复，则返回-1
+        return -1;
+    }
+
+    public long pow(int a, int m, int mod) {
+        long ans = 1;
+        long contribute = a;
+        while (m > 0) {
+            if (m % 2 == 1) {
+                ans = ans * contribute % mod;
+                if (ans < 0) {
+                    ans += mod;
+                }
+            }
+            contribute = contribute * contribute % mod;
+            if (contribute < 0) {
+                contribute += mod;
+            }
+            m /= 2;
+        }
+        return ans;
+    }
+//    作者：力扣官方题解
+//    链接：https://leetcode.cn/problems/longest-duplicate-substring/solutions/1171003/zui-chang-zhong-fu-zi-chuan-by-leetcode-0i9rd/
+//    来源：力扣（LeetCode）
+//    著作权归作者所有.商业转载请联系作者获得授权，非商业转载请注明出处。
+
     public static void main(String[] args) {
         int[] ids = new int[]{1, 2, 3, 4, 5};
         ListNode dummyNode = new ListNode(-1);
@@ -999,7 +1703,7 @@ public class HardTest {
 //        System.out.println(hardTest.reverseKGroup2(dummyNode.next, 3));
 
 
-        int[] nums1 = new int[]{1, 3, 2, 2, 1};
+        int[] nums1 = new int[]{1, 1};
         int[] nums2 = new int[]{3, 4};
 //        hardTest.findMedianSortedArrays(nums1, nums2);
 //        hardTest.maxSlidingWindow(nums1, 4);
@@ -1007,7 +1711,10 @@ public class HardTest {
 //        hardTest.isValid("()");
 //        System.out.println(hardTest.longestValidParentheses("()"));
 //        System.out.println(hardTest.calculate(" 2-1 + 2 "));
-        System.out.println(hardTest.candy(nums1));
+//        System.out.println(hardTest.candy(nums1));
+//        System.out.println(hardTest.numDistinct("babgbag", "bag"));
+//        System.out.println(hardTest.mypow(2, 31));
+        System.out.println(hardTest.longestDupSubstring("banana"));
     }
 }
 

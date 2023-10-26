@@ -145,18 +145,32 @@ public class XC {
     }
 
     public int findKthLargest(int[] nums, int k, int l, int r) {
-        if (l < r) {
+        while (l < r) {
             int p = part(nums, l, r);
             if (p == k) {
-                return nums[p];
-            } else if (p > k) {
-                return findKthLargest(nums, k, l, p - 1);
+                return nums[k];
             } else if (p < k) {
-                return findKthLargest(nums, k, p + 1, r);
+                l = p + 1;
+            } else if (p > k) {
+                r = p - 1;
             }
         }
         return nums[l];
     }
+
+//    public int findKthLargest(int[] nums, int k, int l, int r) {
+//        if (l < r) {
+//            int p = part(nums, l, r);
+//            if (p == k) {
+//                return nums[p];
+//            } else if (p > k) {
+//                return findKthLargest(nums, k, l, p - 1);
+//            } else if (p < k) {
+//                return findKthLargest(nums, k, p + 1, r);
+//            }
+//        }
+//        return nums[l];
+//    }
 
     // topK问题2 347. 前 K 个高频元素 最坏n^2 平均n
 

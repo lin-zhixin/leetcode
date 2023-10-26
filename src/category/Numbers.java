@@ -166,6 +166,37 @@ public class Numbers {
         return res.toArray(new int[res.size()][]);
     }
 
+    //57. 插入区间
+    public int[][] insert(int[][] intervals, int[] newInterval) {
+        int n = intervals.length, i;
+        int[][] ints = new int[n + 1][2];
+        for (i = 0; i < n; i++) {
+            ints[i][0] = intervals[i][0];
+            ints[i][1] = intervals[i][1];
+        }
+        ints[i][0] = newInterval[0];
+        ints[i][1] = newInterval[1];
+
+        Arrays.sort(ints, (o1, o2) -> o1[0] == o2[0] ? o2[1] - o1[1] : o1[0] - o2[0]);
+
+        int l = ints[0][0], r = ints[0][1];
+        List<int[]> res = new ArrayList<>();
+        for (int j = 0; j < ints.length; j++) {
+            if (ints[j][0] <= r && r <= ints[j][1]) {
+                r = ints[j][1];
+            } else if (r < ints[j][0]) {
+                res.add(new int[]{l, r});
+                l = ints[j][0];
+                r = ints[j][1];
+            }
+//            System.out.println(l + " :" + r);
+        }
+        res.add(new int[]{l, r});
+//        System.out.println(res);
+        return res.toArray(new int[res.size()][]);
+    }
+
+
     //1288. 删除被覆盖区间
     public int removeCoveredIntervals(int[][] intervals) {
         Arrays.sort(intervals, (a, b) -> a[0] == b[0] ? b[1] - a[1] : a[0] - b[0]);
@@ -2030,6 +2061,7 @@ public class Numbers {
         int[] nums2 = new int[]{3, 2, 1, 5, 6, 4};
 //        numbers.myPow(2, 10);
         System.out.println(numbers.myAtoi("  -42"));
+
 //        System.out.println(numbers.twoSum(nums1, 6));
 //        System.out.println(numbers.findKthLargest3(nums1, 1));
 //        System.out.println(numbers.multiply("0", "0"));

@@ -59,6 +59,7 @@ class TrieNode {
 
 
 public class Tree {
+
     //101. 对称二叉树
     public boolean isSymmetric(TreeNode root) {
         Deque<TreeNode> q = new LinkedList<>();

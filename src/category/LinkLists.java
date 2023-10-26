@@ -23,6 +23,62 @@ class ListNode {
 
 public class LinkLists {
 
+    //143. 重排链表
+    public void reorderList(ListNode head) {
+        if (head == null) return;
+        ListNode pre = null, s = head, f = head;
+        while (f != null) {
+            pre = s;
+            s = s.next;
+            f = f.next;
+            if (f != null) {
+                f = f.next;
+            }
+        }
+        pre.next = null;
+        s = reverse(s);
+//        System.out.println("re s:");
+//        dis(s);
+//        System.out.println(" head:");
+//        dis(head);
+        head = merge3(head, s);
+//        dis(head);
+    }
+
+    public ListNode reverse(ListNode head) {
+        ListNode pre = null, p = head;
+        while (p != null) {
+            ListNode next = p.next;
+            p.next = pre;
+            pre = p;
+            p = next;
+        }
+        return pre;
+    }
+
+    public ListNode merge3(ListNode a, ListNode b) {
+        ListNode newhead = new ListNode(-1), pa = a, pb = b, pnh = newhead;
+        while (pa != null || pb != null) {
+            if (pa != null) {
+                ListNode next = pa.next;
+                pnh.next = pa;
+                pa.next = null;
+                pa = next;
+                pnh = pnh.next;
+            }
+            if (pb != null) {
+                ListNode next = pb.next;
+                pnh.next = pb;
+                pb.next = null;
+                pb = next;
+                pnh = pnh.next;
+            }
+
+        }
+        return newhead.next;
+    }
+
+
     public ListNode detectCycle(ListNode head) {
         ListNode fast = head, slow = head;
         while (fast != null) {
@@ -219,6 +275,7 @@ public class LinkLists {
 
 
     //11. 盛最多水的容器 双指针
+
     public int maxArea(int[] height) {
         int l = 0, r = height.length - 1, max = 0;
         while (l < r) {
@@ -489,7 +546,7 @@ public class LinkLists {
 
         LinkLists obj = new LinkLists();
         System.out.println();
-        obj.dis(obj.reverseKGroup(dummyNode.next, 2));
+        obj.reorderList(dummyNode.next);
 //        System.out.println(obj.maxArea(new int[]{1, 1}));
 //        obj.dis(obj.removeNthFromEnd(dummyNode.next, 2));
 //        obj.dis(obj.removeNthFromEnd(dummyNode.next, 1));
