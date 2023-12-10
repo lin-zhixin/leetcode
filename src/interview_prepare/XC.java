@@ -136,6 +136,21 @@ public class XC {
         }
     }
 
+    //50. Pow(x, n) 快速幂
+    public double myPow(double x, int n) {
+        double base = n < 0 ? 1.0 / x : x, res = 1;
+        int p = Math.abs(n);
+        while (p != 0) {
+            if (p % 2 == 1) {
+                res *= base;
+            }
+            base *= base;
+            p /= 2;
+        }
+        System.out.println(res);
+        return res;
+
+    }
 
     // topK问题1 215. 数组中的第K个最大元素 时间n 空间logn(使用栈的代价是logn)
     public int findKthLargest(int[] nums, int k) {
@@ -288,54 +303,111 @@ public class XC {
     }
 
     //    环检测 207. 课程表
-    boolean[] v, path;
-    boolean cycle = false;
+    boolean[] v;
+    boolean[] path;
+    boolean hashcycle = false;
+    List<Integer> postorder;
+
 
     public boolean canFinish(int numCourses, int[][] prerequisites) {
+        List<Integer>[] map = buildG2(numCourses, prerequisites);
         v = new boolean[numCourses];
         path = new boolean[numCourses];
-        List<Integer>[] g = buildGraph(numCourses, prerequisites);
         for (int i = 0; i < numCourses; i++) {
-            hasCycle(g, i);
+            dfs(map, i);
         }
-        return !cycle;
+        return hashcycle;
+
     }
 
-    public void hasCycle(List<Integer>[] g, int val) {
-        if (path[val]) {
-            cycle = true;
+    public List<Integer>[] buildG2(int numCourses, int[][] prerequisites) {
+        List<Integer>[] map = new ArrayList[numCourses];
+        for (int[] p : prerequisites) {
+            if (map[p[1]] == null) {
+                map[p[1]] = new ArrayList<>();
+            }
+            map[p[1]].add(p[0]);
         }
-        if (v[val] || cycle) {
+        return map;
+    }
+
+    public void dfs(List<Integer>[] map, int cur) {
+        if (path[cur]) {
+            hashcycle = true;
             return;
         }
-        v[val] = true;
-        path[val] = true;
-        for (Integer to : g[val]) {
-            hasCycle(g, to);
+        if (v[cur] || hashcycle) {
+            return;
         }
-        path[val] = false;
+
+        v[cur] = true;
+        path[cur] = true;
+        map[cur].forEach(e -> dfs(map, e));
+        postorder.add(cur);
+        path[cur] = false;
     }
 
-    public List<Integer>[] buildGraph(int numCourses, int[][] prerequisites) {
-        List<Integer>[] g = new ArrayList[numCourses];
+
+    public int[] findOrder(int numCourses, int[][] prerequisites) {
+        List<Integer>[] map = buildG2(numCourses, prerequisites);
+        v = new boolean[numCourses];
+        path = new boolean[numCourses];
         for (int i = 0; i < numCourses; i++) {
-            g[i] = new ArrayList<>();
+            dfs(map, i);
         }
-        for (int[] prerequisite : prerequisites) {
-//            if (g[prerequisite[1]] == null) {
-//                g[prerequisite[1]] = new ArrayList<>();
-//            }
-            g[prerequisite[1]].add(prerequisite[0]);
-        }
-        return g;
+        Collections.reverse(postOrder);
+        return hashcycle ? new int[]{} : postOrder.stream().mapToInt(Integer::intValue).toArray();
     }
+
+
+//    boolean[] v, path;
+//    boolean cycle = false;
+//
+//    public boolean canFinish(int numCourses, int[][] prerequisites) {
+//        v = new boolean[numCourses];
+//        path = new boolean[numCourses];
+//        List<Integer>[] g = buildGraph(numCourses, prerequisites);
+//        for (int i = 0; i < numCourses; i++) {
+//            hasCycle(g, i);
+//        }
+//        return !cycle;
+//    }
+//
+//    public void hasCycle(List<Integer>[] g, int val) {
+//        if (path[val]) {
+//            cycle = true;
+//        }
+//        if (v[val] || cycle) {
+//            return;
+//        }
+//        v[val] = true;
+//        path[val] = true;
+//        for (Integer to : g[val]) {
+//            hasCycle(g, to);
+//        }
+//        path[val] = false;
+//    }
+//
+//    public List<Integer>[] buildGraph(int numCourses, int[][] prerequisites) {
+//        List<Integer>[] g = new ArrayList[numCourses];
+//        for (int i = 0; i < numCourses; i++) {
+//            g[i] = new ArrayList<>();
+//        }
+//        for (int[] prerequisite : prerequisites) {
+////            if (g[prerequisite[1]] == null) {
+////                g[prerequisite[1]] = new ArrayList<>();
+////            }
+//            g[prerequisite[1]].add(prerequisite[0]);
+//        }
+//        return g;
+//    }
 
     //    210. 课程表 II 拓扑排序
     boolean[] topv, topPa;
     boolean isCycle = false;
     List<Integer> postOrder;
 
-    public int[] findOrder(int numCourses, int[][] prerequisites) {
+    public int[] findOrder2(int numCourses, int[][] prerequisites) {
         topv = new boolean[numCourses];
         topPa = new boolean[numCourses];
         postOrder = new ArrayList<>();
@@ -399,73 +471,233 @@ public class XC {
 
     //    kmp 28. 找出字符串中第一个匹配项的下标
     public int strStr(String haystack, String needle) {
-        int[] next = getnext(needle);
-        int j = 0;
-        for (int i = 0; i < haystack.length(); i++) {
-            while (j > 0 && haystack.charAt(i) != needle.charAt(j)) {
-                j = next[j - 1];
+        int preNext, n = haystack.length();
+        int[] next = getNext(needle);
+        preNext = next[0];
+        for (int i = 0; i < n; i++) {
+            while (preNext > 0 && haystack.charAt(i) != needle.charAt(preNext)) {
+                preNext = next[preNext - 1];
             }
-            if (haystack.charAt(i) == needle.charAt(j)) {
-                j++;
+            if (haystack.charAt(i) == needle.charAt(preNext)) {
+                preNext++;
             }
-            if (j >= next.length) {
-                return i - j;
+            if (preNext == needle.length()) {
+                return i - needle.length() + 1;
             }
         }
         return -1;
 
+
     }
 
-    public int[] getnext(String s) {
-        int n = s.length();
+    public int[] getNext(String s) {
+        int preNext, n = s.length();
         int[] next = new int[n];
         next[0] = 0;
-        int preNext = next[0];
-        for (int i = 1; i < n; i++) {
+        preNext = next[0];
+//        从1开始
+        for (int i = 0; i < n; i++) {
             while (preNext > 0 && s.charAt(i) != s.charAt(preNext)) {
                 preNext = next[preNext - 1];
             }
-            if (s.charAt(i) == s.charAt(preNext)) {
+            if (i != 0 && s.charAt(i) == s.charAt(preNext)) {
                 preNext++;
             }
             next[i] = preNext;
         }
         dis(next);
-
         return next;
+
+
     }
 
-    //33. 搜索旋转排序数组 二分
-    public int search(int[] nums, int target) {
+
+//    public int strStr(String haystack, String needle) {
+//        int[] next = getnext(needle);
+//        int j = 0;
+//        for (int i = 0; i < haystack.length(); i++) {
+//            while (j > 0 && haystack.charAt(i) != needle.charAt(j)) {
+//                j = next[j - 1];
+//            }
+//            if (haystack.charAt(i) == needle.charAt(j)) {
+//                j++;
+//            }
+//            if (j >= next.length) {
+//                return i - j;
+//            }
+//        }
+//        return -1;
+//
+//    }
+//
+//    public int[] getnext(String s) {
+//        int n = s.length();
+//        int[] next = new int[n];
+//        next[0] = 0;
+//        int preNext = next[0];
+//        for (int i = 1; i < n; i++) {
+//            while (preNext > 0 && s.charAt(i) != s.charAt(preNext)) {
+//                preNext = next[preNext - 1];
+//            }
+//            if (s.charAt(i) == s.charAt(preNext)) {
+//                preNext++;
+//            }
+//            next[i] = preNext;
+//        }
+//        dis(next);
+//
+//        return next;
+//    }
+
+    //33. 搜索旋转排序数组 二分(这种相关的题目就用右边进行比较,不用左边(并且只用l r 不用0和n-1),如果没法过全部用例就在等号上面修改(只有不同数找最小值才用l<r,其他情况都用l<=r))
+    public int search2(int[] nums, int target) {
         int n = nums.length, l = 0, r = n - 1;
         while (l <= r) {
             int mid = l + (r - l) / 2;
+
             if (nums[mid] == target) {
                 return mid;
             }
-            if (nums[mid] >= nums[0]) {
-//                分左右两侧讨论
-                if (target > nums[mid] || target < nums[0]) {
-//                    右侧
+
+            if (nums[mid] <= nums[r]) {
+                if (target <= nums[r] && target > nums[mid]) {
                     l = mid + 1;
                 } else {
                     r = mid - 1;
                 }
             } else {
-                if (target < nums[mid] || target > nums[n - 1]) {
+                if (target >= nums[l] && target < nums[mid]) {
                     r = mid - 1;
                 } else {
                     l = mid + 1;
                 }
             }
         }
-        return l >= 0 && l < n && nums[l] == target ? l : -1;
+        System.out.println(l);
+        return -1;
+
+    }
+//    public int search2(int[] nums, int target) {
+//        int n = nums.length, l = 0, r = n - 1;
+//        while (l <= r) {
+//            int mid = l + (r - l) / 2;
+//
+//            if (nums[mid] == target) {
+//                return mid;
+//            }
+//
+//            if (nums[mid] >= nums[l]) {
+//                if (target >= nums[l] && target < nums[mid]) {
+//                    r = mid - 1;
+//                } else {
+//                    l = mid + 1;
+//                }
+//            } else {
+//                if (target <= nums[r] && target > nums[mid]) {
+//                    l = mid + 1;
+//                } else {
+//                    r = mid - 1;
+//                }
+//            }
+//        }
+//        System.out.println(l);
+//        return -1;
+//
+//    }
+
+//    public int search(int[] nums, int target) {
+//        int n = nums.length, l = 0, r = n - 1;
+//        while (l <= r) {
+//            int mid = l + (r - l) / 2;
+//            if (nums[mid] == target) {
+//                return mid;
+//            }
+//            if (nums[mid] >= nums[0]) {
+////                分左右两侧讨论
+//                if (target > nums[mid] || target < nums[0]) {
+////                    右侧
+//                    l = mid + 1;
+//                } else {
+//                    r = mid - 1;
+//                }
+//            } else {
+//                if (target < nums[mid] || target > nums[n - 1]) {
+//                    r = mid - 1;
+//                } else {
+//                    l = mid + 1;
+//                }
+//            }
+//        }
+//        return l >= 0 && l < n && nums[l] == target ? l : -1;
+//    }
+
+    //    81. 搜索旋转排序数组 II
+    public boolean search(int[] nums, int target) {
+        int n = nums.length, l = 0, r = n - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+
+            if (nums[mid] == target) {
+                return true;
+            }
+            if (nums[mid] == nums[l] && nums[mid] == nums[r]) {
+                l++;
+                r--;
+            } else if (nums[mid] <= nums[r]) {
+                if (target <= nums[r] && target > nums[mid]) {
+                    l = mid + 1;
+                } else {
+                    r = mid - 1;
+                }
+            } else {
+                if (target >= nums[r] && target < nums[mid]) {
+                    r = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
+            }
+        }
+        System.out.println(l);
+        return false;
+
     }
 
     //153. 寻找旋转排序数组中的最小值(最大值直接转换成最小值之后取前一位)
 //    总结：找最大（小）值就与大（左）的分支，也就是l（r）做比较
+//    public int findMin(int[] nums) {
+//        int n = nums.length, l = 0, r = n - 1;
+//        while (l <= r) {
+//            int mid = l + (r - l) / 2;
+//            if (nums[mid] > nums[n - 1]) {
+//                l = mid + 1;
+//            } else if (nums[mid] <= nums[n - 1]) {
+//                r = mid - 1;
+//            }
+//        }
+//        return nums[l];
+//
+//
+//    }
+
+    //    public int findMin(int[] nums) {
+//        int n = nums.length, l = 0, r = n - 1;
+//        while (l <= r) {
+//            int mid = l + (r - l) / 2;
+//            if (nums[mid] > nums[r]) {
+//                l = mid + 1;
+//            } else if (nums[mid] < nums[r]) {
+//                r = mid;
+//            } else if (nums[mid] == nums[r]) {
+//                r--;
+//            }
+//        }
+//        return nums[l];
+//
+//    }
+//154. 寻找旋转排序数组中的最小值 II
     public int findMin(int[] nums) {
-        int n = nums.length, l = 0, r = n - 1;
+        int l = 0, r = nums.length - 1, n = nums.length;
+
         while (l <= r) {
             int mid = l + (r - l) / 2;
             if (nums[mid] > nums[r]) {
@@ -480,101 +712,218 @@ public class XC {
 
     }
 
+//public int findMin(int[] nums){
+//    int l = 0, r = nums.length - 1, n = nums.length;
+//
+//    while (l <= r) {
+//        int mid = l + (r - l) / 2;
+////            用左边时候需要添加是否已经是单调的判断，否则会出界 原因：对于l来说一旦出现单调说明l一定是最小值，
+////            因为正常l一定是大于等于r的 l的移动要么是mid+1要么++，两种情况不会产生跨越最小值的情况：
+//        if (nums[l] < nums[r]) {
+//            return nums[l];
+//        }
+//        if (nums[mid] < nums[l]) {
+//            r = mid;
+//        } else if (nums[mid] > nums[l]) {
+//            l = mid + 1;
+//        } else if (nums[mid] == nums[l]) {
+//            l++;
+//        }
+//    }
+//    return nums[l - 1];
+//
+//}
+
     //300. 最长递增子序列
     public int lengthOfLIS(int[] nums) {
-        int n = nums.length, res = 0;
-        int dp[] = new int[n];
-        Arrays.fill(dp, 1);
+        int n = nums.length, p = 0;
+        int[] heap = new int[n];
+
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < i; j++) {
-                dp[i] = nums[j] < nums[i] && dp[j] + 1 > dp[i] ? dp[j] + 1 : dp[i];
+            int ind = lowerBound(heap, p, nums[i]);
+            if (ind == p) {
+                p++;
             }
-            res = Math.max(res, dp[i]);
+            heap[ind] = nums[i];
         }
-        return res;
+        return p;
     }
+
+    public int lowerBound(int[] nums, int p, int k) {
+        int l = 0, r = p - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] == k) {
+                r = mid - 1;
+            } else if (nums[mid] < k) {
+                l = mid + 1;
+            } else if (nums[mid] > k) {
+                r = mid - 1;
+            }
+        }
+        return l;
+    }
+//    public int lengthOfLIS(int[] nums) {
+//        int n = nums.length, res = 0;
+//        int dp[] = new int[n];
+//        Arrays.fill(dp, 1);
+//        for (int i = 0; i < n; i++) {
+//            for (int j = 0; j < i; j++) {
+//                dp[i] = nums[j] < nums[i] && dp[j] + 1 > dp[i] ? dp[j] + 1 : dp[i];
+//            }
+//            res = Math.max(res, dp[i]);
+//        }
+//        return res;
+//    }
 
     //    53. 最大子数组和
     public int maxSubArray(int[] nums) {
-        int n = nums.length, res = nums[0];
+        int n = nums.length, max = -99999;
         int[] dp = new int[n];
         dp[0] = nums[0];
         for (int i = 1; i < n; i++) {
-            dp[i] = Math.max(nums[i], nums[i] + dp[i - 1]);
-            res = Math.max(dp[i], res);
+            dp[i] = Math.max(dp[i - 1] + nums[i], nums[i]);
+            max = Math.max(max, dp[i]);
         }
-        return res;
+        return Math.max(dp[0], max);
 
     }
 
+
+//    public int maxSubArray(int[] nums) {
+//        int n = nums.length, res = nums[0];
+//        int[] dp = new int[n];
+//        dp[0] = nums[0];
+//        for (int i = 1; i < n; i++) {
+//            dp[i] = Math.max(nums[i], nums[i] + dp[i - 1]);
+//            res = Math.max(dp[i], res);
+//        }
+//        return res;
+//
+//    }
+
     //64. 最小路径和
     public int minPathSum(int[][] grid) {
+        if (grid.length == 0) {
+            return 0;
+        }
         int m = grid.length, n = grid[0].length;
         int[][] dp = new int[m][n];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
+                if (i == 0 && j == 0) {
+                    dp[0][0] = grid[0][0];
+                    continue;
+                }
                 if (i == 0) {
-                    dp[i][j] = j == 0 ? grid[0][0] : grid[0][j] + dp[0][j - 1];
+                    dp[0][j] = grid[0][j] + dp[0][j - 1];
                     continue;
                 }
                 if (j == 0) {
-                    dp[i][j] = grid[i][0] + dp[i - 1][0];
+                    dp[i][0] = grid[i][0] + dp[i - 1][0];
                     continue;
                 }
-                dp[i][j] = Math.min(dp[i][j - 1], dp[i - 1][j]) + grid[i][j];
+                dp[i][j] = grid[i][j] + Math.min(dp[i - 1][j], dp[i][j - 1]);
             }
         }
-        disMap(dp);
         return dp[m - 1][n - 1];
-
     }
+//    public int minPathSum(int[][] grid) {
+//        int m = grid.length, n = grid[0].length;
+//        int[][] dp = new int[m][n];
+//        for (int i = 0; i < m; i++) {
+//            for (int j = 0; j < n; j++) {
+//                if (i == 0) {
+//                    dp[i][j] = j == 0 ? grid[0][0] : grid[0][j] + dp[0][j - 1];
+//                    continue;
+//                }
+//                if (j == 0) {
+//                    dp[i][j] = grid[i][0] + dp[i - 1][0];
+//                    continue;
+//                }
+//                dp[i][j] = Math.min(dp[i][j - 1], dp[i - 1][j]) + grid[i][j];
+//            }
+//        }
+//        disMap(dp);
+//        return dp[m - 1][n - 1];
+//
+//    }
 
     //72.编辑距离
     public int minDistance(String word1, String word2) {
-        return minDistance(word1, 0, word2, 0, new int[word1.length()][word2.length()]);
+        int[][] memo = new int[word1.length()][word2.length()];
+        for (int i = 0; i < word1.length(); i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return minDistance(word1, word2, 0, 0, memo);
+
     }
 
-    public int minDistance(String word1, int i, String word2, int j, int[][] memo) {
-        int m = word1.length(), n = word2.length();
-        if (i == m) {
-            return n - j;
+    public int minDistance(String word1, String word2, int i, int j, int[][] memo) {
+        if (i == word1.length()) {
+            return word2.length() - j;
         }
-        if (j == n) {
-            return m - i;
+        if (j == word2.length()) {
+            return word1.length() - i;
         }
-        if (memo[i][j] != 0) {
+        if (memo[i][j] != -1) {
             return memo[i][j];
         }
+
         if (word1.charAt(i) == word2.charAt(j)) {
-            return memo[i][j] = minDistance(word1, i + 1, word2, j + 1, memo);
+            return memo[i][j] = minDistance(word1, word2, i + 1, j + 1, memo);
+        } else {
+            return memo[i][j] = 1 + Math.min(minDistance(word1, word2, i, j + 1, memo), Math.min(minDistance(word1, word2, i + 1, j, memo), minDistance(word1, word2, i + 1, j + 1, memo)));
         }
-        return memo[i][j] = Math.min(Math.min(minDistance(word1, i, word2, j + 1, memo), minDistance(word1, i + 1, word2, j, memo)), minDistance(word1, i + 1, word2, j + 1, memo)) + 1;
-    }
-    //72.编辑距离 dp做法
 
-    public int minDistance2(String word1, String word2) {
-
-        int m = word1.length(), n = word2.length();
-        int[][] dp = new int[m + 1][n + 1];
-        for (int i = 0; i <= m; i++) {
-            for (int j = 0; j <= n; j++) {
-                if (i == 0) {
-                    dp[i][j] = j;
-                    continue;
-                }
-                if (j == 0) {
-                    dp[i][j] = i;
-                    continue;
-                }
-                if (word1.charAt(i) == word2.charAt(j)) {
-                    dp[i][j] = dp[i - 1][j - 1];
-                } else {
-                    dp[i][j] = Math.min(Math.min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]) + 1;
-                }
-            }
-        }
-        return dp[m][n];
     }
+
+
+//    public int minDistance(String word1, String word2) {
+//        return minDistance(word1, 0, word2, 0, new int[word1.length()][word2.length()]);
+//    }
+//
+//    public int minDistance(String word1, int i, String word2, int j, int[][] memo) {
+//        int m = word1.length(), n = word2.length();
+//        if (i == m) {
+//            return n - j;
+//        }
+//        if (j == n) {
+//            return m - i;
+//        }
+//        if (memo[i][j] != 0) {
+//            return memo[i][j];
+//        }
+//        if (word1.charAt(i) == word2.charAt(j)) {
+//            return memo[i][j] = minDistance(word1, i + 1, word2, j + 1, memo);
+//        }
+//        return memo[i][j] = Math.min(Math.min(minDistance(word1, i, word2, j + 1, memo), minDistance(word1, i + 1, word2, j, memo)), minDistance(word1, i + 1, word2, j + 1, memo)) + 1;
+//    }
+//    //72.编辑距离 dp做法
+//
+//    public int minDistance2(String word1, String word2) {
+//
+//        int m = word1.length(), n = word2.length();
+//        int[][] dp = new int[m + 1][n + 1];
+//        for (int i = 0; i <= m; i++) {
+//            for (int j = 0; j <= n; j++) {
+//                if (i == 0) {
+//                    dp[i][j] = j;
+//                    continue;
+//                }
+//                if (j == 0) {
+//                    dp[i][j] = i;
+//                    continue;
+//                }
+//                if (word1.charAt(i) == word2.charAt(j)) {
+//                    dp[i][j] = dp[i - 1][j - 1];
+//                } else {
+//                    dp[i][j] = Math.min(Math.min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]) + 1;
+//                }
+//            }
+//        }
+//        return dp[m][n];
+//    }
 
     //    5. 最长回文子串
     public String longestPalindrome(String s) {
@@ -868,7 +1217,7 @@ public class XC {
 //        xc.sortArray(nums);
 //        xc.heapSortArray(nums);
 
-        xc.strStr2("mississippi", "issip");
+        xc.strStr("mississippi", "issip");
 //        xc.permuteUnique(nums1);
 //        xc.longestCommonPrefix(new String[]{"ab", "a"});
 

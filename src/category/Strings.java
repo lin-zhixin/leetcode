@@ -408,6 +408,10 @@ public class Strings {
         int[] next = new int[n];
         next[0] = 0;
         int k = next[0];
+        //        next[0]已经确定了 不能从0 开始 会导致next是一个1 2 3 4 5... 的数组进而导致strStr死循环，必须从1开始或者循环里面的if加上0的判断：
+        //        if (i != 0 && s.charAt(i) == s.charAt(preNext)) {
+        //                preNext++;
+        //            }
         for (int i = 1; i < n; i++) {
 //            每次循环开始 k就是上一个的next 就是next[i-1]：前面子串的最大前后缀的下一位字符p[]
             while (k > 0 && p.charAt(i) != p.charAt(k)) {

@@ -7,7 +7,10 @@ import java.util.stream.Collectors;
 
 //hard练习
 public class HardTest {
+
+
     public void dis(ListNode head) {
+        Object
         ListNode p = head;
         while (Objects.nonNull(p)) {
             System.out.print(p.val + " ");
@@ -21,10 +24,11 @@ public class HardTest {
     public ListNode reverseKGroup(ListNode head, int k) {
         ListNode a = head, b = head;
         int t = k;
-        while (b != null && (t = t - 1) >= 0) {
+//        &&左右两边的顺序不能换     如果换了的话下面的if条件也需要换
+        while ((t = t - 1) >= 0 && b != null) {
             b = b.next;
         }
-        if (t > 0) {
+        if (t >= 0) {
             return head;
         }
         ListNode newHead = reverse(a, b);
@@ -145,6 +149,52 @@ public class HardTest {
         }
         return res;
 
+
+    }
+
+    //    407. 接雨水 II
+    public int trapRainWater(int[][] heightMap) {
+//        使用堆，从最外围把最外围的所有元素放进堆中 然后在最外围里面找一条高度最小的路线 在路线行进的过程中每个位置的上下左右当中的能够填满的地方都填满，
+//        同时把未访问的上下左右放进最小堆中
+        if (heightMap.length < 3 || heightMap[0].length < 3) {
+            return 0;
+        }
+        PriorityQueue<int[]> heap = new PriorityQueue<>((o1, o2) -> o1[2] - o2[2]);
+        int m = heightMap.length, n = heightMap[0].length;
+        boolean[][] v = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == 0 || i == m - 1 || j == 0 || j == n - 1) {
+                    //System.out.println(i + "," + j + " :" + heightMap[i][j]);
+                    heap.offer(new int[]{i, j, heightMap[i][j]});
+                    v[i][j] = true;
+                }
+            }
+        }
+        System.out.println(heap);
+        int res = 0;
+        List<Pair<Integer, Integer>> move = new ArrayList<>();
+        move.add(new Pair<>(-1, 0));
+        move.add(new Pair<>(1, 0));
+        move.add(new Pair<>(0, -1));
+        move.add(new Pair<>(0, 1));
+        while (!heap.isEmpty()) {
+            int[] cur = heap.poll();
+            System.out.println(cur[0] + "," + cur[1] + " :" + cur[2]);
+            for (Pair<Integer, Integer> p : move) {
+                int nx = cur[0] + p.getKey(), ny = cur[1] + p.getValue();
+                if (nx >= 0 && nx < m && ny >= 0 && ny < n && !v[nx][ny]) {
+                    res += cur[2] > heightMap[nx][ny] ? cur[2] - heightMap[nx][ny] : 0;
+                    heap.offer(new int[]{nx, ny, Math.max(heightMap[nx][ny], cur[2])});
+                    v[nx][ny] = true;
+                }
+            }
+        }
+        return res;
+
+        // [1,4,3,1,3,2]
+        // [3,2,1,3,2,4]
+        //[2,3,3,2,3,1]
 
     }
 
@@ -1499,43 +1549,45 @@ public class HardTest {
         long P = 31;
         long[] h;
         long[] p;
+
         public String longestDupSubstring(String s) {
-            h = new long[s.length()+1];
-            p = new long[s.length()+1];
+            h = new long[s.length() + 1];
+            p = new long[s.length() + 1];
             p[0] = 1;
-            for(int i = 1;i<=s.length();i++){
-                h[i] = h[i-1]*P + (long)s.charAt(i-1);
-                p[i] = p[i-1]*P;
+            for (int i = 1; i <= s.length(); i++) {
+                h[i] = h[i - 1] * P + (long) s.charAt(i - 1);
+                p[i] = p[i - 1] * P;
             }
             int left = 0;
             int right = s.length();
-            while(left<right){
-                int mid = left+(right-left)/2;
+            while (left < right) {
+                int mid = left + (right - left) / 2;
                 String ans = findRepeatedDnaSequences(s, mid);
-                if(ans == ""){
+                if (ans == "") {
                     right = mid;
-                }else{
+                } else {
                     left = mid + 1;
                 }
             }
-            return findRepeatedDnaSequences(s,left-1);
+            return findRepeatedDnaSequences(s, left - 1);
         }
 
         public String findRepeatedDnaSequences(String s, int len) {
-            if(len<0) return "";
+            if (len < 0) return "";
             Map<Long, Integer> map = new HashMap<>();
-            for(int i = len;i<=s.length();i++){
-                long v = h[i] - h[i-len]*p[len];
-                if(map.containsKey(v)){
-                    if(map.get(v) == 1){
-                        return s.substring(i-len,i);
+            for (int i = len; i <= s.length(); i++) {
+                long v = h[i] - h[i - len] * p[len];
+                if (map.containsKey(v)) {
+                    if (map.get(v) == 1) {
+                        return s.substring(i - len, i);
                     }
                     map.put(v, map.get(v) + 1);
-                }else map.put(v,1);
+                } else map.put(v, 1);
             }
             return "";
         }
     }
+
     public String longestDupSubstring(String s) {
         int n = s.length(), l = 1, r = n - 1, start = -1, len = 0;
         while (l <= r) {
@@ -1907,8 +1959,11 @@ class LFUCache {
     public int get(int key) {
         if (!kv.containsKey(key)) {
             return -1;
+
         }
+        System.out.println("k" + key);
         int oldf = kf.get(key);
+
         kf.put(key, oldf + 1);
         fk.get(oldf).remove(key);
         fk.putIfAbsent(oldf + 1, new LinkedHashSet<>());

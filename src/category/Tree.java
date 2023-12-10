@@ -1,5 +1,7 @@
 package category;
 
+import interview_prepare.MT;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -990,6 +992,7 @@ public class Tree {
 //        o.mergeTrees(root1, root2);
 //        System.out.println(o.openLock(new String[]{"8888"}, "0009"));
 //        System.out.println(o.openLock(new String[]{"8887","8889","8878","8898","8788","8988","7888","9888"}, "8888"));
+
     }
 
 }
@@ -1049,38 +1052,33 @@ class WordDictionary {
     TrieNode root;
 
     public WordDictionary() {
-        root = new TrieNode();
+        this.root = new TrieNode();
     }
+
 
     public void addWord(String word) {
         TrieNode p = root;
         for (int i = 0; i < word.length(); i++) {
-            p = (p.children[word.charAt(i) - 'a'] = p.children[word.charAt(i) - 'a'] == null ? new TrieNode() : p.children[word.charAt(i) - 'a']);
+            int cn = word.charAt(i) - 'a';
+            p = p.children[cn] == null ? p.children[cn] = new TrieNode() : p.children[cn];
         }
         p.end = true;
     }
 
     public boolean search(String word) {
-        TrieNode p = root;
-        return search(word, p);
+        return search(word, root);
     }
 
     public boolean search(String word, TrieNode root) {
         TrieNode p = root;
-        if (p == null) {
-            return false;
-        }
         for (int i = 0; i < word.length(); i++) {
-            if (p == null) {
-                return false;
-            }
             if (word.charAt(i) == '.') {
                 int finalI = i;
-                return Arrays.stream(p.children).anyMatch(cj -> cj != null && search(word.substring(finalI + 1), cj));
-            } else {
-                p = (p.children[word.charAt(i) - 'a']);
+                return Arrays.stream(p.children).filter(Objects::nonNull).anyMatch(child -> search(word.substring(finalI + 1), child));
             }
+            int cn = word.charAt(i) - 'a';
+            p = p.children[cn] == null ? p.children[cn] = new TrieNode() : p.children[cn];
         }
-        return p != null && p.end;
+        return p.end;
     }
 }

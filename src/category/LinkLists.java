@@ -22,6 +22,28 @@ class ListNode {
 }
 
 public class LinkLists {
+    //    86. 分隔链表
+    public ListNode partition(ListNode head, int x) {
+        ListNode lh = new ListNode(), mh = new ListNode(), p1 = lh, more = mh;
+        mh.next = head;
+        while (more.next != null) {
+            if (more.next.val <= x) {
+                ListNode t = more.next;
+                more.next = t.next;
+                t.next = null;
+                p1.next = t;
+                p1 = p1.next;
+            } else {
+                more = more.next;
+            }
+        }
+        p1.next = mh.next;
+        head = lh.next;
+//        disListNode(head);
+        return head;
+
+    }
+
 
     //143. 重排链表
     public void reorderList(ListNode head) {
@@ -77,6 +99,7 @@ public class LinkLists {
         }
         return newhead.next;
     }
+    
 
 
     public ListNode detectCycle(ListNode head) {

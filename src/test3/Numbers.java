@@ -9,6 +9,128 @@ import java.util.stream.Collectors;
 //import org.apache.commons.collections.CollectionUtils;
 
 public class Numbers {
+    //33. 搜索旋转排序数组
+    public int search(int[] nums, int target) {
+        int n = nums.length, l = 0, r = n - 1;
+        while (l <= r) {
+//            String
+            int mid = l + (r - l) / 2;
+            if (target == nums[mid]) {
+                return mid;
+            }
+//            先确定mid在那一侧
+            if (nums[mid] >= nums[0]) {
+//                之后在只有单调区间的一侧确定
+                if (target >= nums[0] && target < nums[mid]) {
+                    r = mid - 1;
+                } else {
+                    l = mid + 1;
+                }
+            } else {
+                if (target <= nums[n - 1] && target > nums[mid]) {
+                    l = mid + 1;
+                } else {
+                    r = mid - 1;
+                }
+            }
+        }
+        return -1;
+
+    }
+
+    //215. 数组中的第K个最大元素
+    public int findKthLargest(int[] nums, int k) {
+        rchange(nums);
+        return qsort(nums, nums.length - k, 0, nums.length - 1);
+    }
+
+    public void rchange(int[] nums) {
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            int r = i - 1 + new Random().nextInt(n - i);
+            int t = nums[i];
+            nums[i] = nums[r];
+            nums[r] = t;
+        }
+
+    }
+
+    public int qsort(int[] nums, int k, int l, int r) {
+        while (l < r) {
+            int p = part(nums, l, r);
+            if (p == k) {
+                return nums[p];
+            } else if (p < k) {
+//                return qsort(nums, k, p + 1, r);
+                l = p + 1;
+            } else if (p > k) {
+//                return qsort(nums, k, l, p - 1);
+                r = p - 1;
+            }
+        }
+        return nums[l];
+    }
+
+    public int part(int[] nums, int l, int r) {
+        int p = nums[l];
+        while (l < r) {
+            while (l < r && nums[r] >= p) r--;
+            nums[l] = nums[r];
+            while (l < r && nums[l] <= p) l++;
+            nums[r] = nums[l];
+        }
+        nums[l] = p;
+        return l;
+    }
+
+
+    //386. 字典序排数
+    public List<Integer> lexicalOrder(int n) {
+        List<Integer> res = new ArrayList<>();
+        int num = 1;
+        for (int i = 0; i < n; i++) {
+            res.add(num);
+            if (num * 10 <= n) {
+                num *= 10;
+            } else {
+                while (num % 10 == 9 || num + 1 > n) {
+                    num /= 10;
+                }
+                num++;
+            }
+        }
+        return res;
+
+    }
+
+    public int findKthNumber(int n, int k) {
+        int cur = 1;
+        k--;
+        while (k > 0) {
+            int ccn = getChildNum(cur, n);
+            if (k >= ccn) {
+                k -= ccn;
+                cur++;
+            } else {
+                cur *= 10;
+                k--;
+            }
+        }
+        return cur;
+
+
+    }
+
+    public int getChildNum(int cur, int n) {
+        long first = cur, last = cur, num = 0;
+        while (first <= n) {
+            num += Math.min(last, n) - first + 1;
+            first *= 10;
+            last = last * 10 + 9;
+        }
+        return (int) num;
+    }
+
     //    179. 最大数
     public String largestNumber(int[] nums) {
         List<Long> list = Arrays.stream(nums).mapToLong(Integer::toUnsignedLong).boxed().sorted((a, b) -> (int) ((long) (b * Math.pow(10, a.toString().length()) + a) - (a * Math.pow(10, b.toString().length()) + b))).collect(Collectors.toList());

@@ -1,9 +1,46 @@
 import javafx.util.Pair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Graph {
     //797. 所有可能的路径 有向无环图的所有遍历
+    List<List<Integer>> res;
+
+    public List<List<Integer>> allPathsSourceTarget2(int[][] graph) {
+        List<Integer>[] map = buildG(graph);
+        v = new boolean[map.length];
+        res = new ArrayList<>();
+        dfs(map, 0, new LinkedList<>());
+        return res;
+    }
+
+    public List<Integer>[] buildG(int[][] graph) {
+        List<Integer>[] map = new ArrayList[graph.length];
+        for (int i = 0; i < map.length; i++) {
+            map[i] = new ArrayList<>();
+        }
+
+        for (int i = 0; i < graph.length; i++) {
+            map[i].addAll(Arrays.stream(graph[i]).boxed().collect(Collectors.toList()));
+        }
+        return map;
+    }
+
+    public void dfs(List<Integer>[] map, int cur, Deque<Integer> path) {
+//        if (v[cur]) {
+//            return;
+//        }
+//        v[cur] = true;
+        path.offerLast(cur);
+        if (cur == map.length - 1) {
+            res.add(new ArrayList<>(path));
+        }
+        map[cur].forEach(e -> dfs(map, e, path));
+        path.pollLast();
+    }
+
+
     public List<List<Integer>> allPathsSourceTarget(int[][] graph) {
         List<List<Integer>> res = new ArrayList<>();
         int n = graph.length;
@@ -117,6 +154,6 @@ public class Graph {
 
     public static void main(String[] args) {
         Graph graph = new Graph();
-        System.out.println(graph.findOrder(2,new int[0][0]));
+        System.out.println(graph.findOrder(2, new int[0][0]));
     }
 }

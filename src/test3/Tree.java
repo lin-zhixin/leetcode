@@ -23,7 +23,110 @@ class TreeNode {
     }
 }
 
+class Node {
+    public int val;
+    public Node left;
+    public Node right;
+
+    public Node() {
+    }
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, Node _left, Node _right) {
+        val = _val;
+        left = _left;
+        right = _right;
+    }
+};
+
 public class Tree {
+    //236. 二叉树的最近公共祖先
+    TreeNode lowestCommonAncestor = null;
+
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null) {
+            return null;
+        }
+        if (Objects.equals(root, p) || Objects.equals(root, q)) {
+            return root;
+        }
+        TreeNode l = lowestCommonAncestor(root.left, p, q);
+        TreeNode r = lowestCommonAncestor(root.right, p, q);
+        if (l != null && r != null) {
+            return root;
+        }
+        if (l != null) {
+            return l;
+        }
+        return r;
+    }
+
+//    public TreeNode lowestCommonAncestor2(TreeNode root, TreeNode p, TreeNode q)
+
+
+    //    LCR 155. 将二叉搜索树转化为排序的双向链表（非递归）
+    public Node treeToDoublyList(Node root) {
+        if (root == null) {
+            return null;
+        }
+        Stack<Node> stack = new Stack<>();
+        Node p = root, pre = null, head = null, peek;
+        while (!stack.isEmpty() || p != null) {
+            while (p != null) {
+                stack.push(p);
+                p = p.left;
+            }
+
+            peek = stack.pop();
+//            做连接
+            if (pre == null) {
+                head = peek;
+            } else {
+                pre.right = peek;
+            }
+            peek.left = pre;
+            pre = peek;
+//            转换p的值
+            p = peek.right;
+        }
+//        连接头尾
+        pre.right = head;
+        head.left = pre;
+
+        return head;
+    }
+
+    //    LCR 155. 将二叉搜索树转化为排序的双向链表（递归）
+    Node pre, head;
+
+    public Node treeToDoublyList2(Node root) {
+        if (root == null) {
+            return null;
+        }
+        treeToDoublyList21(root);
+        head.left = pre;
+        pre.right = head;
+        return head;
+    }
+
+    public void treeToDoublyList21(Node root) {
+        if (root == null) {
+            return;
+        }
+        treeToDoublyList21(root.left);
+        if (pre == null) {
+            head = root;
+        } else {
+            pre.right = root;
+        }
+        root.left = pre;
+        pre = root;
+        treeToDoublyList21(root.right);
+    }
+
     //1325. 删除给定值的叶子节点
     public TreeNode removeLeafNodes(TreeNode root, int target) {
         if (root == null) {
