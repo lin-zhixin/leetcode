@@ -37,6 +37,14 @@ public class MyUtile {
             System.out.println();
         }
     }
+    public static void disMap(long[][] a) {
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[i].length; j++) {
+                System.out.print("("+i+","+j+") "+a[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
 
     public static void printBlank(int count, String s) {
         for (int i = 0; i < count; i++) {

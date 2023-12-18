@@ -2,8 +2,55 @@ package test3;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class DP {
+    //198. 打家劫舍
+    public int rob(int[] nums) {
+        if (nums.length == 0) {
+            return 0;
+        }
+        if (nums.length == 1) {
+            return nums[0];
+        }
+        int n = nums.length;
+        int[] dp = new int[n];
+//        Arrays.fill(dp, 99999);
+        dp[0] = nums[0];
+        dp[1] = nums[1];
+        int max = Math.max(dp[0], dp[1]);
+        for (int i = 2; i < n; i++) {
+            for (int j = 0; j < i - 1; j++) {
+                dp[i] = Math.max(dp[i], dp[j] + nums[i]);
+                max = Math.max(max, dp[i]);
+            }
+
+        }
+//        System.out.println(Arrays.stream(dp).boxed().collect(Collectors.toList()));
+        return max;
+
+
+    }
+
+    public boolean canJump(int[] nums) {
+
+        int n = nums.length;
+        int[] dp = new int[n];
+        Arrays.fill(dp, 99999);
+        dp[0] = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < i; j++) {
+                if (i - j <= nums[j]) {
+                    dp[i] = Math.min(dp[i], dp[j] + 1);
+                }
+            }
+        }
+//        System.out.println(Arrays.stream(dp).boxed().collect(Collectors.toList()));
+        return dp[n - 1] != 99999;
+
+
+    }
+
     //    97. 交错字符串
     public boolean isInterleave(String s1, String s2, String s3) {
         int[][][] memo = new int[s1.length()][s2.length()][s3.length()];
