@@ -10,7 +10,7 @@ public class HardTest {
 
 
     public void dis(ListNode head) {
-        Object
+//        Object
         ListNode p = head;
         while (Objects.nonNull(p)) {
             System.out.print(p.val + " ");

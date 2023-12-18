@@ -1,13 +1,16 @@
 package test2;
 
+import category.MyUtile;
 import javafx.util.Pair;
 
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class HardTest2 {
+
 
     //    25. K 个一组翻转链表
     public ListNode reverseKGroup(ListNode head, int k) {
@@ -450,12 +453,348 @@ public class HardTest2 {
 
     }
 
-    public static void main(String[] args) {
-        String rexp = "^((\\d{2}(([02468][048])|([13579][26]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])))))|(\\d{2}(([02468][1235679])|([13579][01345789]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|(1[0-9])|(2[0-8]))))))";
+    //44. 通配符匹配
+    public boolean isMatch2(String s, String p) {
+        int m = s.length(), n = p.length();
+        int[][] memo = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            Arrays.fill(memo[i], -1);
+        }
+        return isMatch2(s, p, 0, 0, memo) == 1;
+    }
 
-        Pattern p = Pattern.compile("[123]");
-        Matcher mat = p.matcher("4");
-        System.out.println(mat.matches());
+    public int isMatch2(String s, String p, int i, int j, int[][] memo) {
+        int m = s.length(), n = p.length();
+        if (j == n) {
+            System.out.println(i);
+            return i == m ? 1 : 0;
+        }
+        if (i == m) {
+            System.out.println(j);
+            for (int k = j; k < n; k++) {
+                if (p.charAt(k) != '*') {
+                    return 0;
+                }
+            }
+            return 1;
+        }
+        if (memo[i][j] != -1) {
+            return memo[i][j];
+        }
+        char sc = s.charAt(i), pc = p.charAt(j);
+        if (pc == '?' || sc == pc) {
+            return memo[i][j] = isMatch2(s, p, i + 1, j + 1, memo);
+        } else {
+            if (pc == '*') {
+                return memo[i][j] = (isMatch2(s, p, i + 1, j, memo) == 1 || isMatch2(s, p, i, j + 1, memo) == 1) ? 1 : 0;
+            } else {
+                return 0;
+            }
+        }
+
+    }
+
+
+    //    887. 鸡蛋掉落
+    public int superEggDrop(int k, int n) {
+//        dp[k][n]:k个鸡蛋，允许操作n次最多能够检测几层
+        int[][] dp = new int[k + 1][n + 1];
+        int j;
+//        dp[k][j - 1] 应该用j-1比较，因为j-1才是上一轮得到的结果
+        for (j = 1; dp[k][j - 1] < n; j++) {
+            System.out.println(dp[k][j]);
+            for (int i = 1; i <= k; i++) {
+//                每次操作，要么碎要么不碎，睡了就是只需要检测当前层下面的，不碎就是上面的，所以把下面的最大层数+上面最大层数相加再加当前这层
+//                如果结果大于n也就是最少需要操作的次数，
+                dp[i][j] = dp[i][j - 1] + dp[i - 1][j - 1] + 1;
+            }
+        }
+//        MyUtile.disMap(dp);
+        return j - 1;
+
+    }
+
+    //312. 戳气球
+    public int maxCoins(int[] nums) {
+        int n = nums.length;
+        List<Integer> list = Arrays.stream(nums).boxed().collect(Collectors.toList());
+        list.add(0, 1);
+        list.add(1);
+        System.out.println(list);
+        nums = list.stream().mapToInt(Integer::intValue).toArray();
+        MyUtile.dis(nums);
+//        dp[i][j]:(i,j)闭区间的最大值，也就是i+1~j-1的最大值
+        int[][] dp = new int[n + 2][n + 2];
+        for (int i = n + 1; i >= 0; i--) {
+            for (int j = i + 1; j < n + 2; j++) {
+                for (int k = i + 1; k < j; k++) {
+//                    因为i<k<j 所以dp[i][k]是dp[i][j]的下边几列的元素，同理dp[k][j]是dp[i][j]的左边几列行元素
+//                    所以需要先遍历大于i的和小于j的 所以i从n+1到0，j从(i+1)到n+1 注意：这边是开区间，sy所以k没必要从i开始
+                    dp[i][j] = Math.max(dp[i][j], dp[i][k] + dp[k][j] + (nums[i] * nums[k] * nums[j]));
+                }
+            }
+        }
+        MyUtile.disMap(dp);
+        return dp[0][n + 1];
+
+    }
+
+    //84. 柱状图中最大的矩形
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length;
+        int[] left = new int[n], right = new int[n];
+
+        Stack<Integer> stack = new Stack<>();
+        for (int i = 0; i < n; i++) {
+            while (!stack.isEmpty() && heights[stack.peek()] >= heights[i]) {
+                stack.pop();
+            }
+            left[i] = stack.isEmpty() ? -1 : stack.peek();
+            stack.push(i);
+        }
+        stack.clear();
+        for (int i = n - 1; i >= 0; i--) {
+            while (!stack.isEmpty() && heights[stack.peek()] >= heights[i]) {
+                stack.pop();
+            }
+            right[i] = stack.isEmpty() ? n : stack.peek();
+            stack.push(i);
+        }
+//        MyUtile.dis(left);
+//        MyUtile.dis(right);
+//        System.out.println(stack);
+        int res = 0;
+        for (int i = 0; i < n; i++) {
+            res = Math.max(res, (right[i] - left[i] - 1) * heights[i]);
+        }
+        System.out.println(res);
+        return res;
+    }
+
+    //85. 最大矩形
+    public int maximalRectangle(char[][] matrix) {
+        if (matrix.length == 0 || matrix[0].length == 0) {
+            return 0;
+        }
+        int m = matrix.length, n = matrix[0].length;
+        int[][] up = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                up[i][j] = matrix[i][j] - '0';
+                up[i][j] += i > 0 && up[i - 1][j] > 0 && up[i][j] > 0 ? up[i - 1][j] : 0;
+            }
+        }
+
+        int res = 0;
+        for (int i = 0; i < m; i++) {
+            res = Math.max(res, largestRectangleArea(up[i]));
+        }
+        return res;
+    }
+
+    public static void disMap(int[][] a) {
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[i].length; j++) {
+                System.out.print("(" + i + "," + j + ") " + a[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    //1444. 切披萨的方案数
+    public int ways(String[] pizza, int k) {
+        if (pizza.length == 0 || pizza[0].length() == 0) {
+            return 0;
+        }
+        int m = pizza.length, n = pizza[0].length(), mod = 1000000007;
+        //        apple[i][j]:以apple[i][j]为左上角的剩余矩形所包含的苹果数
+        int[][] apples = new int[m + 1][n + 1];
+        //        dp[k][i][j]:以apple[i][j]为左上角的剩余矩形分为k块的方案数
+        int[][][] dp = new int[k + 1][m + 1][n + 1];
+
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= 0; j--) {
+                apples[i][j] = apples[i + 1][j] + apples[i][j + 1] - apples[i + 1][j + 1] + (pizza[i].charAt(j) == 'A' ? 1 : 0);
+//                在获取苹果数的同时为一份披萨的初始化，只要有苹果就能够分成1快 且只有一种分法
+                dp[1][i][j] = apples[i][j] > 0 ? 1 : 0;
+            }
+        }
+        disMap(apples);
+
+//        ki从2开始，1已经初始化
+        for (int ki = 2; ki <= k; ki++) {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < n; j++) {
+
+//                    加上所有的横切的可能性，在row处切掉的所有情况都加上，因为只要row处能够切都算一个切法
+                    for (int row = i + 1; row < m; row++) {
+//                        apples[i][j] 只可能>= apples[row][j],等于的情况不能切，因为上面没有苹果
+                        if (apples[i][j] > apples[row][j]) {
+                            dp[ki][i][j] = (dp[ki][i][j] + dp[ki - 1][row][j]) % mod;
+                        }
+                    }
+                    for (int col = j + 1; col < n; col++) {
+                        if (apples[i][j] > apples[i][col]) {
+                            dp[ki][i][j] = (dp[ki][i][j] + dp[ki - 1][i][col]) % mod;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return dp[k][0][0];
+
+
+    }
+
+    //    LCR 162. 数字 1 的个数
+    public int digitOneInNumber(int num) {
+        int len = String.valueOf(num).length();
+        long res = 0;
+        for (int i = 0; i < len; i++) {
+//            123100
+            long mod = (int) Math.pow(10, i);
+            System.out.println("mod" + mod);
+            long l = num / (mod * 10);
+            long r = num % (mod * 10);
+            System.out.println(l);
+            System.out.println(r);
+            long lsum = l * mod;
+            long rsum = Math.min(mod, Math.max(0, r - mod + 1));
+            System.out.println("lsum:" + lsum + " rsum" + rsum);
+            res += lsum;
+            res += rsum;
+        }
+        System.out.println(res);
+        return (int) res;
+
+
+    }
+
+    //37. 解数独
+    public void solveSudoku(char[][] board) {
+        backtrace(board, 0, 0);
+
+    }
+
+    public boolean backtrace(char[][] board, int i, int j) {
+        int m = 9, n = 9;
+        if (j == n) {
+            return backtrace(board, i + 1, 0);
+        }
+        if (i == m) {
+            return true;
+        }
+        if (board[i][j] != '.') {
+            return backtrace(board, i, j + 1);
+        }
+        for (char c = '1'; c <= '9'; c++) {
+            if (valid(board, i, j, c)) {
+                board[i][j] = c;
+                if (backtrace(board, i, j + 1)) {
+                    return true;
+                }
+                board[i][j] = '.';
+            }
+        }
+        return false;
+
+    }
+
+    public boolean valid(char[][] board, int i, int j, char c) {
+        for (int k = 0; k < 9; k++) {
+            if (board[k][j] == c || board[i][k] == c || board[(i / 3) * 3 + k / 3][(j / 3) * 3 + k % 3] == c) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //    36. 有效的数独
+    public boolean isValidSudoku(char[][] board) {
+        for (int k = 0; k < 9; k++) {
+            if (board)
+            if (board[k][j] == c || board[i][k] == c || board[(i / 3) * 3 + k / 3][(j / 3) * 3 + k % 3] == c) {
+                return false;
+            }
+        }
+    }
+
+    //679. 24 点游戏
+    static final int A = 0, M = 1, S = 2, D = 3;
+    static final double E = 1e-6;
+    static final double TARGET = 1e-6;
+
+    public boolean judgePoint24(int[] cards) {
+        List<Double> nums = Arrays.stream(cards).mapToDouble(Double::valueOf).boxed().collect(Collectors.toList());
+//        System.out.println(nums);
+        return backtrace(nums);
+    }
+
+    public boolean backtrace(List<Double> nums) {
+//        整体思路：枚举所有情况回溯，每次抽取两个数，之后针对每种符号情况计算之后放进新的数组里面，进行回溯，直到符合条件为止
+//        需要注意的 点：1.+*交换律需要去重 /号需要分母0的处理，此时是不能remove尾巴的 因为这种情况不会add新的进去nums2 2.在符号的循环里面回溯（递归+remove）
+        if (nums == null || nums.size() == 0) {
+            return false;
+        }
+        if (nums.size() == 1) {
+            return nums.get(0) == TARGET;
+//            return Math.abs(nums.get(0) - TARGET) < E;
+        }
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    List<Double> nums2 = new ArrayList<>();
+                    for (int k = 0; k < n; k++) {
+//                        放出了ij之外的数
+                        if (k != i && k != j) {
+                            nums2.add(nums.get(k));
+                        }
+                    }
+                    for (int k = 0; k < 4; k++) {
+                        if (k < 2 && j < i) {
+//                            +*交换律 去重
+                            continue;
+                        }
+                        if (k == A) {
+                            nums2.add(nums.get(i) + nums.get(j));
+                        } else if (k == M) {
+                            nums2.add(nums.get(i) * nums.get(j));
+                        } else if (k == S) {
+                            nums2.add(nums.get(i) - nums.get(j));
+                        } else if (k == D) {
+//                            if (Math.abs(nums.get(j)) < E) {
+                            if (nums.get(j) == 0) {
+                                continue;
+                            } else {
+                                nums2.add(nums.get(i) / nums.get(j));
+                            }
+                        }
+                        if (backtrace(nums2)) {
+                            return true;
+                        }
+                        nums2.remove(nums2.size() - 1);
+                    }
+                }
+            }
+        }
+        return false;
+
+    }
+
+    public static void main(String[] args) {
+//        String rexp = "^((\\d{2}(([02468][048])|([13579][26]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])))))|(\\d{2}(([02468][1235679])|([13579][01345789]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|(1[0-9])|(2[0-8]))))))";
+////        SingleThreadScheduledEx
+//        Pattern p = Pattern.compile("[123]");
+//        Matcher mat = p.matcher("4");
+//        System.out.println(mat.matches());
+        int[] nums = new int[]{2, 1, 5, 6, 2, 3};
+        HardTest2 ht = new HardTest2();
+//        System.out.println(ht.digitOneInNumber(1410065408));
+//        ht.solveNQueens(4);
+//        System.out.println(ht.digitOneInNumber(123456));
 
     }
 }
@@ -632,4 +971,63 @@ class LFUCache {
     }
 }
 
+
+class Solution {
+    static final int TARGET = 24;
+    static final double EPSILON = 1e-6;
+    static final int ADD = 0, MULTIPLY = 1, SUBTRACT = 2, DIVIDE = 3;
+
+    public boolean judgePoint24(int[] nums) {
+        List<Double> list = new ArrayList<Double>();
+        for (int num : nums) {
+            list.add((double) num);
+        }
+        return solve(list);
+    }
+
+    public boolean solve(List<Double> list) {
+        if (list.size() == 0) {
+            return false;
+        }
+        if (list.size() == 1) {
+            return Math.abs(list.get(0) - TARGET) < EPSILON;
+        }
+        int size = list.size();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (i != j) {
+                    List<Double> list2 = new ArrayList<Double>();
+                    for (int k = 0; k < size; k++) {
+                        if (k != i && k != j) {
+                            list2.add(list.get(k));
+                        }
+                    }
+                    for (int k = 0; k < 4; k++) {
+                        if (k < 2 && i > j) {
+                            continue;
+                        }
+                        if (k == ADD) {
+                            list2.add(list.get(i) + list.get(j));
+                        } else if (k == MULTIPLY) {
+                            list2.add(list.get(i) * list.get(j));
+                        } else if (k == SUBTRACT) {
+                            list2.add(list.get(i) - list.get(j));
+                        } else if (k == DIVIDE) {
+                            if (Math.abs(list.get(j)) < EPSILON) {
+                                continue;
+                            } else {
+                                list2.add(list.get(i) / list.get(j));
+                            }
+                        }
+                        if (solve(list2)) {
+                            return true;
+                        }
+                        list2.remove(list2.size() - 1);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+}
 
